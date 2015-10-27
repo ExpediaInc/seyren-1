@@ -16,6 +16,7 @@ package com.seyren.core.service.notification;
 
 import com.google.gson.Gson;
 import com.seyren.core.domain.Alert;
+import com.seyren.core.domain.AlertType;
 import com.seyren.core.domain.Check;
 import com.seyren.core.domain.Subscription;
 import com.seyren.core.domain.SubscriptionType;
@@ -43,21 +44,38 @@ public class ScriptNotificationService implements NotificationService {
     }
     @Override
     public void sendNotification(Check check, Subscription subscription, List<Alert> alerts) throws NotificationFailedException {
-        LOGGER.info("Script Location: {}", seyrenConfig.getScriptPath());
-        ProcessBuilder pb = new ProcessBuilder(seyrenConfig.getScriptType() ,seyrenConfig.getScriptPath(), subscription.getTarget(), new Gson().toJson(check));
-        try {
-            LOGGER.info("Script Start");
-            Process p = pb.start();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                LOGGER.info(line);
-            }
-            LOGGER.info("Script End");
-        } catch (IOException e) {
-            LOGGER.info("Script could not be sent: {}", e.getMessage());
-            throw new NotificationFailedException("Could not send message through the script");
-        }
+	    if (check.getState() == AlertType.ERROR) {
+	        LOGGER.info("Script Location: {}", seyrenConfig.getScriptPath());
+	    	for(Alert alert: alerts) {
+	    		try {
+	    			String hostPostion = subscription.getTarget();
+	    			String hostname = getHostName(alert,hostPostion);
+	    			ProcessBuilder pb = new ProcessBuilder(seyrenConfig.getScriptType(), seyrenConfig.getScriptPath(), hostname, new Gson().toJson(check), seyrenConfig.getBaseUrl());
+	                LOGGER.info("Script Start");
+	                Process p = pb.start();
+	                BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+	                String line;
+	                while ((line = reader.readLine()) != null) {
+	                    LOGGER.info(line);
+	                    //System.out.println(line);
+	                }
+	                LOGGER.info("Script End");
+	    		}
+	    		catch (Exception e) {
+	                LOGGER.info("Script could not be sent: {}", e.getMessage());
+	                throw new NotificationFailedException("Could not send message through the script");
+	    		}
+	    	}
+	    }
+    }
+
+    private String getHostName(Alert alert,String hostPostion) {
+        int pos = Integer.parseInt(hostPostion);
+        //LOGGER.info("******* hostPostion found : "+pos);
+        String[] target = alert.getTarget().split("\\.");
+        String hostname = target[pos-1];
+        //LOGGER.info("******* Retuning Hostname " +hostname); 
+        return hostname;
     }
 
     @Override
