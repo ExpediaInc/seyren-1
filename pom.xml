@@ -80,6 +80,7 @@
         <spring.security.version>4.0.0.RELEASE</spring.security.version>
         <javax.servlet-api.version>2.5</javax.servlet-api.version>
         <commons-dbcp.version>1.4</commons-dbcp.version>
+        <version.yammer.metrics>3.0.1</version.yammer.metrics>
     </properties>
     
     <prerequisites>
@@ -231,6 +232,11 @@
                 <groupId>com.fasterxml.jackson.jaxrs</groupId>
                 <artifactId>jackson-jaxrs-json-provider</artifactId>
                 <version>${com.fasterxml.jackson.jaxrs.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.codahale.metrics</groupId>
+                <artifactId>metrics-core</artifactId>
+                <version>${version.yammer.metrics}</version>
             </dependency>
             <dependency>
                 <groupId>com.github.rest-driver</groupId>

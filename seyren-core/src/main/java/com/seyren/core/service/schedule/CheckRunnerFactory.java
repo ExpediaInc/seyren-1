@@ -32,26 +32,26 @@ public class CheckRunnerFactory {
     
     private final AlertsStore alertsStore;
     private final ChecksStore checksStore;
-    private final TargetChecker targetChecker;
-    private final ValueChecker valueChecker;
+    private final TargetCheckerFactory targetCheckerFactory;
+    private final ValueCheckerFactory valueCheckerFactory;
     private final Iterable<NotificationService> notificationServices;
     
     @Inject
-    public CheckRunnerFactory(AlertsStore alertsStore, ChecksStore checksStore, TargetChecker targetChecker, ValueChecker valueChecker,
+    public CheckRunnerFactory(AlertsStore alertsStore, ChecksStore checksStore, TargetCheckerFactory targetCheckerFactory, ValueCheckerFactory valueCheckerFactory,
             List<NotificationService> notificationServices) {
         this.alertsStore = alertsStore;
         this.checksStore = checksStore;
-        this.targetChecker = targetChecker;
-        this.valueChecker = valueChecker;
+        this.targetCheckerFactory = targetCheckerFactory;
+        this.valueCheckerFactory = valueCheckerFactory;
         this.notificationServices = notificationServices;
     }
 
     public CheckRunner create(Check check) {
-        return new CheckRunner(check, alertsStore, checksStore, targetChecker, valueChecker, notificationServices);
+        return new CheckRunner(check, alertsStore, checksStore, targetCheckerFactory.create(check), valueCheckerFactory.create(check), notificationServices);
     }
 
     public CheckRunner create(Check check, BigDecimal value) {
-        return new CheckRunner(check, alertsStore, checksStore, new NoopTargetCheck(value), valueChecker, notificationServices);
+        return new CheckRunner(check, alertsStore, checksStore, new NoopTargetCheck(value), valueCheckerFactory.create(check), notificationServices);
     }
 
 }

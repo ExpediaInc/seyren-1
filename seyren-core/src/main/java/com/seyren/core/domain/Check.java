@@ -47,6 +47,7 @@ public class Check {
     private BigDecimal warn;
     private BigDecimal error;
     private boolean enabled;
+    private boolean variableThresholdEnabled;
     private boolean live;
     private boolean allowNoData;
     private AlertType state;
@@ -78,7 +79,11 @@ public class Check {
         setName(name);
         return this;
     }
-    
+
+    public boolean isVariableThresholdEnabled() {
+        return variableThresholdEnabled;
+    }
+
     public String getDescription() {
         return description;
     }

@@ -119,7 +119,8 @@ public class CheckRunnerTest {
         BigDecimal value = BigDecimal.ONE;
         BigDecimal warn = BigDecimal.valueOf(2);
         BigDecimal error = BigDecimal.valueOf(3);
-        
+        Alert alert = new Alert().withToType(AlertType.OK);
+
         when(mockCheck.getId()).thenReturn("id");
         when(mockCheck.isEnabled()).thenReturn(true);
         when(mockCheck.getWarn()).thenReturn(warn);
@@ -129,7 +130,7 @@ public class CheckRunnerTest {
         targetValues.put("target", Optional.of(value));
         when(mockTargetChecker.check(mockCheck)).thenReturn(targetValues);
         when(mockAlertsStore.getLastAlertForTargetOfCheck("target", "id")).thenReturn(null);
-        when(mockValueChecker.checkValue(value, warn, error)).thenReturn(AlertType.OK);
+        when(mockValueChecker.checkValue(value, mockCheck,"target",AlertType.OK)).thenReturn(alert);
         checkRunner.run();
     }
     
@@ -139,7 +140,9 @@ public class CheckRunnerTest {
         BigDecimal value = BigDecimal.ONE;
         BigDecimal warn = BigDecimal.valueOf(2);
         BigDecimal error = BigDecimal.valueOf(3);
-        
+        Alert alert = new Alert().withToType(AlertType.WARN);
+        AlertType lastState = AlertType.WARN;
+
         when(mockCheck.getId()).thenReturn("id");
         when(mockCheck.isEnabled()).thenReturn(true);
         when(mockCheck.getWarn()).thenReturn(warn);
@@ -148,11 +151,9 @@ public class CheckRunnerTest {
         Map<String, Optional<BigDecimal>> targetValues = new HashMap<String, Optional<BigDecimal>>();
         targetValues.put("target", Optional.of(value));
         when(mockTargetChecker.check(mockCheck)).thenReturn(targetValues);
-        when(mockAlertsStore.getLastAlertForTargetOfCheck("target", "id")).thenReturn(new Alert().withToType(AlertType.WARN));
-        when(mockValueChecker.checkValue(value, warn, error)).thenReturn(AlertType.WARN);
-        
-        Alert alert = new Alert();
-        
+        when(mockAlertsStore.getLastAlertForTargetOfCheck("target", "id")).thenReturn(new Alert().withToType(lastState));
+        when(mockValueChecker.checkValue(value, mockCheck, "target", lastState)).thenReturn(alert);
+
         when(mockAlertsStore.createAlert(eq("id"), any(Alert.class))).thenReturn(alert);
         when(mockChecksStore.updateStateAndLastCheck(eq("id"), eq(AlertType.WARN), any(DateTime.class))).thenReturn(mockCheck);
         
@@ -168,7 +169,9 @@ public class CheckRunnerTest {
         BigDecimal value = BigDecimal.ONE;
         BigDecimal warn = BigDecimal.valueOf(2);
         BigDecimal error = BigDecimal.valueOf(3);
-        
+        Alert alert = new Alert().withToType(AlertType.ERROR);
+        AlertType lastState = AlertType.WARN;
+
         when(mockCheck.getId()).thenReturn("id");
         when(mockCheck.isEnabled()).thenReturn(true);
         when(mockCheck.getWarn()).thenReturn(warn);
@@ -178,11 +181,10 @@ public class CheckRunnerTest {
         Map<String, Optional<BigDecimal>> targetValues = new HashMap<String, Optional<BigDecimal>>();
         targetValues.put("target", Optional.of(value));
         when(mockTargetChecker.check(mockCheck)).thenReturn(targetValues);
-        when(mockAlertsStore.getLastAlertForTargetOfCheck("target", "id")).thenReturn(new Alert().withToType(AlertType.WARN));
-        when(mockValueChecker.checkValue(value, warn, error)).thenReturn(AlertType.ERROR);
+        when(mockAlertsStore.getLastAlertForTargetOfCheck("target", "id")).thenReturn(new Alert().withToType(lastState));
+        when(mockValueChecker.checkValue(value, mockCheck, "target", lastState)).thenReturn(alert);
         
-        Alert alert = new Alert();
-        
+
         when(mockAlertsStore.createAlert(eq("id"), any(Alert.class))).thenReturn(alert);
         when(mockChecksStore.updateStateAndLastCheck(eq("id"), eq(AlertType.ERROR), any(DateTime.class))).thenReturn(mockCheck);
         
@@ -198,7 +200,9 @@ public class CheckRunnerTest {
         BigDecimal value = BigDecimal.ONE;
         BigDecimal warn = BigDecimal.valueOf(2);
         BigDecimal error = BigDecimal.valueOf(3);
-        
+        Alert alert = new Alert().withToType(AlertType.ERROR);
+        AlertType lastState = AlertType.WARN;
+
         Subscription mockSubscription = mock(Subscription.class);
         when(mockSubscription.getType()).thenReturn(SubscriptionType.EMAIL);
         
@@ -211,11 +215,9 @@ public class CheckRunnerTest {
         Map<String, Optional<BigDecimal>> targetValues = new HashMap<String, Optional<BigDecimal>>();
         targetValues.put("target", Optional.of(value));
         when(mockTargetChecker.check(mockCheck)).thenReturn(targetValues);
-        when(mockAlertsStore.getLastAlertForTargetOfCheck("target", "id")).thenReturn(new Alert().withToType(AlertType.WARN));
-        when(mockValueChecker.checkValue(value, warn, error)).thenReturn(AlertType.ERROR);
-        
-        Alert alert = new Alert();
-        
+        when(mockAlertsStore.getLastAlertForTargetOfCheck("target", "id")).thenReturn(new Alert().withToType(lastState));
+        when(mockValueChecker.checkValue(value, mockCheck, "target",lastState)).thenReturn(alert);
+
         when(mockAlertsStore.createAlert(eq("id"), any(Alert.class))).thenReturn(alert);
         when(mockChecksStore.updateStateAndLastCheck(eq("id"), eq(AlertType.ERROR), any(DateTime.class))).thenReturn(mockCheck);
         when(mockSubscription.shouldNotify(any(DateTime.class), eq(AlertType.ERROR))).thenReturn(false);
@@ -232,7 +234,10 @@ public class CheckRunnerTest {
         BigDecimal value = BigDecimal.ONE;
         BigDecimal warn = BigDecimal.valueOf(2);
         BigDecimal error = BigDecimal.valueOf(3);
-        
+        Alert alert = new Alert().withToType(AlertType.ERROR);
+        AlertType lastState = AlertType.WARN;
+
+
         Subscription mockSubscription = mock(Subscription.class);
         when(mockSubscription.getType()).thenReturn(SubscriptionType.EMAIL);
         
@@ -245,11 +250,9 @@ public class CheckRunnerTest {
         Map<String, Optional<BigDecimal>> targetValues = new HashMap<String, Optional<BigDecimal>>();
         targetValues.put("target", Optional.of(value));
         when(mockTargetChecker.check(mockCheck)).thenReturn(targetValues);
-        when(mockAlertsStore.getLastAlertForTargetOfCheck("target", "id")).thenReturn(new Alert().withToType(AlertType.WARN));
-        when(mockValueChecker.checkValue(value, warn, error)).thenReturn(AlertType.ERROR);
-        
-        Alert alert = new Alert();
-        
+        when(mockAlertsStore.getLastAlertForTargetOfCheck("target", "id")).thenReturn(new Alert().withToType(lastState));
+        when(mockValueChecker.checkValue(value, mockCheck, "target", lastState)).thenReturn(alert);
+
         when(mockAlertsStore.createAlert(eq("id"), any(Alert.class))).thenReturn(alert);
         when(mockChecksStore.updateStateAndLastCheck(eq("id"), eq(AlertType.ERROR), any(DateTime.class))).thenReturn(mockCheck);
         when(mockSubscription.shouldNotify(any(DateTime.class), eq(AlertType.ERROR))).thenReturn(true);
@@ -267,7 +270,9 @@ public class CheckRunnerTest {
         BigDecimal value = BigDecimal.ONE;
         BigDecimal warn = BigDecimal.valueOf(2);
         BigDecimal error = BigDecimal.valueOf(3);
-        
+        Alert alert = new Alert().withToType(AlertType.ERROR);
+        AlertType lastState = AlertType.WARN;
+
         Subscription mockSubscription = mock(Subscription.class);
         when(mockSubscription.getType()).thenReturn(SubscriptionType.EMAIL);
         
@@ -280,11 +285,9 @@ public class CheckRunnerTest {
         Map<String, Optional<BigDecimal>> targetValues = new HashMap<String, Optional<BigDecimal>>();
         targetValues.put("target", Optional.of(value));
         when(mockTargetChecker.check(mockCheck)).thenReturn(targetValues);
-        when(mockAlertsStore.getLastAlertForTargetOfCheck("target", "id")).thenReturn(new Alert().withToType(AlertType.WARN));
-        when(mockValueChecker.checkValue(value, warn, error)).thenReturn(AlertType.ERROR);
-        
-        Alert alert = new Alert();
-        
+        when(mockAlertsStore.getLastAlertForTargetOfCheck("target", "id")).thenReturn(new Alert().withToType(lastState));
+        when(mockValueChecker.checkValue(value, mockCheck, "target",lastState)).thenReturn(alert);
+
         when(mockAlertsStore.createAlert(eq("id"), any(Alert.class))).thenReturn(alert);
         when(mockChecksStore.updateStateAndLastCheck(eq("id"), eq(AlertType.ERROR), any(DateTime.class))).thenReturn(mockCheck);
         when(mockSubscription.shouldNotify(any(DateTime.class), eq(AlertType.ERROR))).thenReturn(true);
@@ -302,7 +305,9 @@ public class CheckRunnerTest {
         BigDecimal value = BigDecimal.ONE;
         BigDecimal warn = BigDecimal.valueOf(2);
         BigDecimal error = BigDecimal.valueOf(3);
-        
+        Alert alert = new Alert().withToType(AlertType.ERROR);
+        AlertType lastState = AlertType.WARN;
+
         Subscription mockSubscription = mock(Subscription.class);
         when(mockSubscription.getType()).thenReturn(SubscriptionType.EMAIL);
         
@@ -315,11 +320,9 @@ public class CheckRunnerTest {
         Map<String, Optional<BigDecimal>> targetValues = new HashMap<String, Optional<BigDecimal>>();
         targetValues.put("target", Optional.of(value));
         when(mockTargetChecker.check(mockCheck)).thenReturn(targetValues);
-        when(mockAlertsStore.getLastAlertForTargetOfCheck("target", "id")).thenReturn(new Alert().withToType(AlertType.WARN));
-        when(mockValueChecker.checkValue(value, warn, error)).thenReturn(AlertType.ERROR);
-        
-        Alert alert = new Alert();
-        
+        when(mockAlertsStore.getLastAlertForTargetOfCheck("target", "id")).thenReturn(new Alert().withToType(lastState));
+        when(mockValueChecker.checkValue(value, mockCheck, "target", lastState)).thenReturn(alert);
+
         when(mockAlertsStore.createAlert(eq("id"), any(Alert.class))).thenReturn(alert);
         when(mockChecksStore.updateStateAndLastCheck(eq("id"), eq(AlertType.ERROR), any(DateTime.class))).thenReturn(mockCheck);
         when(mockSubscription.shouldNotify(any(DateTime.class), eq(AlertType.ERROR))).thenReturn(true);

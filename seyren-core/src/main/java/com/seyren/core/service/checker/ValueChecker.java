@@ -15,10 +15,12 @@ package com.seyren.core.service.checker;
 
 import java.math.BigDecimal;
 
+import com.seyren.core.domain.Alert;
 import com.seyren.core.domain.AlertType;
+import com.seyren.core.domain.Check;
 
 public interface ValueChecker {
     
-    AlertType checkValue(BigDecimal value, BigDecimal warn, BigDecimal error);
+    Alert checkValue(BigDecimal value, Check check, String target, AlertType lastState);
     
 }

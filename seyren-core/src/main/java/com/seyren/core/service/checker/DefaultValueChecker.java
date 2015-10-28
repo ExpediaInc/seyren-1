@@ -17,23 +17,29 @@ import java.math.BigDecimal;
 
 import javax.inject.Named;
 
+import com.seyren.core.domain.Alert;
 import com.seyren.core.domain.AlertType;
+import com.seyren.core.domain.Check;
+import org.joda.time.DateTime;
 
 @Named
 public class DefaultValueChecker implements ValueChecker {
     
     @Override
-    public AlertType checkValue(BigDecimal value, BigDecimal warn, BigDecimal error) {
+    public Alert checkValue(BigDecimal value, Check check, String target, AlertType lastState) {
+
+        BigDecimal warn = check.getWarn();
+        BigDecimal error = check.getError();
         
         boolean isHighValueWorse = isTheValueBeingHighWorse(warn, error);
         
         if (isBeyondThreshold(value, error, isHighValueWorse)) {
-            return AlertType.ERROR;
+            return createAlert(target, value, check.getWarn(), check.getError(), lastState, AlertType.ERROR, DateTime.now());
         } else if (isBeyondThreshold(value, warn, isHighValueWorse)) {
-            return AlertType.WARN;
+            return  createAlert(target, value, check.getWarn(), check.getError(), lastState, AlertType.WARN, DateTime.now());
         }
         
-        return AlertType.OK;
+        return createAlert(target, value, check.getWarn(), check.getError(), lastState, AlertType.OK, DateTime.now());
         
     }
     
@@ -42,6 +48,17 @@ public class DefaultValueChecker implements ValueChecker {
             return value.compareTo(threshold) >= 0;
         }
         return value.compareTo(threshold) <= 0;
+    }
+
+    private Alert createAlert(String target, BigDecimal value, BigDecimal warn, BigDecimal error, AlertType from, AlertType to, DateTime now) {
+        return new Alert()
+                .withTarget(target)
+                .withValue(value)
+                .withWarn(warn)
+                .withError(error)
+                .withFromType(from)
+                .withToType(to)
+                .withTimestamp(now);
     }
     
     private boolean isTheValueBeingHighWorse(BigDecimal warn, BigDecimal error) {

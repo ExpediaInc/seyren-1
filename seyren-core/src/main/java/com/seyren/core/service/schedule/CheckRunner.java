@@ -65,8 +65,6 @@ public class CheckRunner implements Runnable {
             Map<String, Optional<BigDecimal>> targetValues = targetChecker.check(check);
             
             DateTime now = new DateTime();
-            BigDecimal warn = check.getWarn();
-            BigDecimal error = check.getError();
             
             AlertType worstState;
             
@@ -100,8 +98,8 @@ public class CheckRunner implements Runnable {
                     lastState = lastAlert.getToType();
                 }
                 
-                AlertType currentState = valueChecker.checkValue(currentValue, warn, error);
-                
+                Alert alert = valueChecker.checkValue(currentValue,check,target,lastState);
+                AlertType currentState = alert.getToType();
                 if (currentState.isWorseThan(worstState)) {
                     worstState = currentState;
                 }
@@ -109,9 +107,7 @@ public class CheckRunner implements Runnable {
                 if (isStillOk(lastState, currentState)) {
                     continue;
                 }
-                
-                Alert alert = createAlert(target, currentValue, warn, error, lastState, currentState, now);
-                
+
                 alertsStore.createAlert(check.getId(), alert);
                 
                 // Only notify if the alert has changed state
