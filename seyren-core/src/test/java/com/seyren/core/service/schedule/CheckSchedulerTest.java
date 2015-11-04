@@ -83,7 +83,7 @@ public class CheckSchedulerTest {
         mockChecks.add(at82PercentMockCheck);
         
         SeyrenResponse<Check> checks = new SeyrenResponse<Check>().withValues(mockChecks);
-        when(mockChecksStore.getChecks(true, false)).thenReturn(checks);
+        when(mockChecksStore.getChecks(true, null)).thenReturn(checks);
 
         // Mock checks for Mongo ObjectId-based id values
         mockChecksStoreByObjectId = mock(ChecksStore.class);
@@ -120,7 +120,7 @@ public class CheckSchedulerTest {
         mockChecksByObjectId.add(index5MockCheck);
         
         SeyrenResponse<Check> checksByObjectId = new SeyrenResponse<Check>().withValues(mockChecksByObjectId);
-        when(mockChecksStoreByObjectId.getChecks(true, false)).thenReturn(checksByObjectId);
+        when(mockChecksStoreByObjectId.getChecks(true, null)).thenReturn(checksByObjectId);
     }
 
     @SuppressWarnings("unused")
@@ -156,7 +156,7 @@ public class CheckSchedulerTest {
         
         checkScheduler.performChecks();
         
-        verify(mockChecksStore, times(1)).getChecks(true, false);
+        verify(mockChecksStore, times(1)).getChecks(true, null);
         verify(mockCheckRunnerFactory, times(1)).create(atBeginningMockCheck);
         verify(mockCheckRunnerFactory, times(1)).create(atEndMockCheck);
         verify(mockCheckRunnerFactory, times(1)).create(nearBeginningMockCheck);
@@ -182,7 +182,7 @@ public class CheckSchedulerTest {
         
         checkScheduler.performChecks();
         
-        verify(mockChecksStore, times(1)).getChecks(true, false);
+        verify(mockChecksStore, times(1)).getChecks(true, null);
         verify(mockCheckRunnerFactory, times(1)).create(atBeginningMockCheck);
         verify(mockCheckRunnerFactory, times(0)).create(atEndMockCheck);
         verify(mockCheckRunnerFactory, times(1)).create(nearBeginningMockCheck);
@@ -208,7 +208,7 @@ public class CheckSchedulerTest {
         
         checkScheduler.performChecks();
         
-        verify(mockChecksStore, times(1)).getChecks(true, false);
+        verify(mockChecksStore, times(1)).getChecks(true, null);
         verify(mockCheckRunnerFactory, times(0)).create(atBeginningMockCheck);
         verify(mockCheckRunnerFactory, times(1)).create(atEndMockCheck);
         verify(mockCheckRunnerFactory, times(0)).create(nearBeginningMockCheck);
@@ -234,7 +234,7 @@ public class CheckSchedulerTest {
         
         checkScheduler.performChecks();
         
-        verify(mockChecksStoreByObjectId, times(1)).getChecks(true, false);
+        verify(mockChecksStoreByObjectId, times(1)).getChecks(true, null);
         verify(mockCheckRunnerFactory, times(1)).create(index1MockCheck);
         verify(mockCheckRunnerFactory, times(1)).create(index2MockCheck);
         verify(mockCheckRunnerFactory, times(1)).create(index3MockCheck);
@@ -262,7 +262,7 @@ public class CheckSchedulerTest {
         
         // With instance index of 1, should run any task whose characters, mod 3, equals 0
         // 01 = 1, 02 = 2, 03 = 0, 04 = 1, 05 = 2, so worker 1 should run check 03
-        verify(mockChecksStoreByObjectId, times(1)).getChecks(true, false);
+        verify(mockChecksStoreByObjectId, times(1)).getChecks(true, null);
         verify(mockCheckRunnerFactory, times(0)).create(index1MockCheck);
         verify(mockCheckRunnerFactory, times(0)).create(index2MockCheck);
         verify(mockCheckRunnerFactory, times(1)).create(index3MockCheck);
@@ -291,7 +291,7 @@ public class CheckSchedulerTest {
         // With instance index of 3, should run any task whose characters, mod 3, equals 2
         // 01 = 1, 02 = 2, 03 = 0, 04 = 1, 05 = 2, so worker 3 should run checks 02 and 05
         
-        verify(mockChecksStoreByObjectId, times(1)).getChecks(true, false);
+        verify(mockChecksStoreByObjectId, times(1)).getChecks(true, null);
         verify(mockCheckRunnerFactory, times(0)).create(index1MockCheck);
         verify(mockCheckRunnerFactory, times(1)).create(index2MockCheck);
         verify(mockCheckRunnerFactory, times(0)).create(index3MockCheck);

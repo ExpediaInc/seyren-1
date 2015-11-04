@@ -57,7 +57,7 @@ public class CheckScheduler {
     @Scheduled(fixedRateString = "${GRAPHITE_REFRESH:60000}")
     public void performChecks() {
     	int checksInScope = 0;
-        List<Check> checks = checksStore.getChecks(true, false).getValues();
+        List<Check> checks = checksStore.getChecks(true, null).getValues();
         for (final Check check : checks) {
     		// Skip any not in this instance's workload
         	if (!isMyWork(check)) {
