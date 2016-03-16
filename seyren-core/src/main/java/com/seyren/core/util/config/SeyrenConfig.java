@@ -89,6 +89,7 @@ public class SeyrenConfig {
     private final String victorOpsRestAPIEndpoint;
     private final String emailTemplateFileName;
     private final String emailSubjectTemplateFileName;
+    private final String httpTemplateFileName;
     private final String httpNotificationUrl;
     private final boolean securityEnabled;
     private final String scriptPath;
@@ -182,6 +183,7 @@ public class SeyrenConfig {
         // Template
         this.emailTemplateFileName = configOrDefault("TEMPLATE_EMAIL_FILE_PATH","com/seyren/core/service/notification/email-template.vm");
         this.emailSubjectTemplateFileName = configOrDefault("TEMPLATE_EMAIL_SUBJECT_FILE_PATH","com/seyren/core/service/notification/email-subject-template.vm");
+        this.httpTemplateFileName = configOrDefault("TEMPLATE_HTTP_FILE_PATH","com/seyren/core/service/notification/http-template.vm");
 
         // spring security
         this.securityEnabled = Boolean.parseBoolean(configOrDefault("SECURITY_ENABLED", "false"));
@@ -476,6 +478,9 @@ public class SeyrenConfig {
 
     @JsonIgnore
     public String getEmailSubjectTemplateFileName() { return emailSubjectTemplateFileName; }
+
+    @JsonIgnore
+    public String getHttpTemplateFileName() { return httpTemplateFileName; }
 
     @JsonIgnore
     public String getVictorOpsRestEndpoint() {

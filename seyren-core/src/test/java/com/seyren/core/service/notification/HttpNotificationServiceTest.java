@@ -23,8 +23,12 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
+import com.seyren.core.util.http.HttpHelper;
+import com.seyren.core.util.velocity.VelocityHttpHelper;
 import org.hamcrest.Matchers;
 import org.junit.Before;
+import org.joda.time.DateTime;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -41,21 +45,24 @@ import com.seyren.core.domain.SubscriptionType;
 import com.seyren.core.util.config.SeyrenConfig;
 
 public class HttpNotificationServiceTest {
-    
-    private SeyrenConfig mockSeyrenConfig;
-    private NotificationService service;
-    
+
+    private static SeyrenConfig mockSeyrenConfig;
+    private static HttpHelper mockHttpHelper;
+    private static NotificationService service;
+
     @Rule
     public ClientDriverRule clientDriver = new ClientDriverRule();
-    
-    @Before
-    public void before() {
+
+    @BeforeClass
+    public static void before() {
         mockSeyrenConfig = mock(SeyrenConfig.class);
-        service = new HttpNotificationService(mockSeyrenConfig);
-    }
-    
+        when(mockSeyrenConfig.getHttpTemplateFileName()).thenReturn("test2-http-template.vm");
+
+        mockHttpHelper = new VelocityHttpHelper(mockSeyrenConfig);
+        service = new HttpNotificationService(mockSeyrenConfig, mockHttpHelper);    }
+
     @Test
-    public void notifcationServiceCanOnlyHandleHttpSubscription() {
+    public void notificationServiceCanOnlyHandleHttpSubscription() {
         assertThat(service.canHandle(SubscriptionType.HTTP), is(true));
         for (SubscriptionType type : SubscriptionType.values()) {
             if (type == SubscriptionType.HTTP) {
@@ -64,15 +71,15 @@ public class HttpNotificationServiceTest {
             assertThat(service.canHandle(type), is(false));
         }
     }
-    
+
     @Test
     public void checkingOutTheHappyPath() {
-        
+
         String seyrenUrl = clientDriver.getBaseUrl() + "/seyren";
-        
+
         when(mockSeyrenConfig.getGraphiteUrl()).thenReturn(clientDriver.getBaseUrl() + "/graphite");
         when(mockSeyrenConfig.getBaseUrl()).thenReturn(seyrenUrl);
-        
+
         Check check = new Check()
                 .withEnabled(true)
                 .withName("check-name")
@@ -80,34 +87,35 @@ public class HttpNotificationServiceTest {
                 .withState(AlertType.ERROR)
                 .withWarn(BigDecimal.ONE)
                 .withError(BigDecimal.TEN);
-        
+
         Subscription subscription = new Subscription()
                 .withType(SubscriptionType.HTTP)
                 .withTarget(clientDriver.getBaseUrl() + "/myendpoint/thatdoesstuff");
-        
+
         Alert alert = new Alert()
                 .withTarget("the.target.name")
                 .withValue(BigDecimal.valueOf(12))
                 .withWarn(BigDecimal.valueOf(5))
                 .withError(BigDecimal.valueOf(10))
                 .withFromType(AlertType.WARN)
-                .withToType(AlertType.ERROR);
-        
+                .withToType(AlertType.ERROR)
+                .withTimestamp(new DateTime());
+
         List<Alert> alerts = Arrays.asList(alert);
-        
+
         BodyCapture<JsonNode> bodyCapture = new JsonBodyCapture();
-        
+
         clientDriver.addExpectation(
                 onRequestTo("/myendpoint/thatdoesstuff")
                         .withMethod(Method.POST)
                         .capturingBodyIn(bodyCapture),
                 giveResponse("success", "text/plain"));
-        
+
         service.sendNotification(check, subscription, alerts);
-        
+
         JsonNode node = bodyCapture.getContent();
-        
-        
+
+
         assertThat(node, hasJsonPath("$.seyrenUrl", is(seyrenUrl)));
         assertThat(node, hasJsonPath("$.check.name", is("check-name")));
         assertThat(node, hasJsonPath("$.check.state", is("ERROR")));
@@ -120,10 +128,9 @@ public class HttpNotificationServiceTest {
         assertThat(node, hasJsonPath("$.alerts[0].toType", is("ERROR")));
         assertThat(node, hasJsonPath("$.preview", Matchers.startsWith("<br />")));
         assertThat(node, hasJsonPath("$.preview", containsString(check.getTarget())));
-        
+
         verify(mockSeyrenConfig).getGraphiteUrl();
         verify(mockSeyrenConfig).getBaseUrl();
-        
+
     }
-    
 }

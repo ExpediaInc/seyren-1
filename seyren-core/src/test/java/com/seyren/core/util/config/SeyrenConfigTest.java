@@ -164,6 +164,11 @@ public class SeyrenConfigTest {
     }
 
     @Test
+    public void defaultHttpTemplateFileIsCorrect() {
+        assertThat(config.getHttpTemplateFileName(), is("com/seyren/core/service/notification/http-template.vm"));
+    }
+
+    @Test
     public void defaultNumOfThreadsIsCorrect() {
         assertThat(config.getNoOfThreads(), is(8));
     }

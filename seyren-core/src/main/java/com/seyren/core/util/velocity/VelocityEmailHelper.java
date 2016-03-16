@@ -13,17 +13,12 @@
  */
 package com.seyren.core.util.velocity;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringWriter;
-import java.net.URL;
 import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 
@@ -34,16 +29,11 @@ import com.seyren.core.util.config.SeyrenConfig;
 import com.seyren.core.util.email.EmailHelper;
 
 @Named
-public class VelocityEmailHelper implements EmailHelper {
+public class VelocityEmailHelper extends AbstractHelper implements EmailHelper {
 
     // Will first attempt to load from classpath then fall back to loading from the filesystem.
-    private final String TEMPLATE_FILE_NAME;
     private final String TEMPLATE_CONTENT;
-
-    private final String TEMPLATE_SUBJECT_FILE_NAME;
     private final String TEMPLATE_SUBJECT_CONTENT;
-    
-    private final SeyrenConfig seyrenConfig;
 
     /**
      * Loads content of configurable templated email message at creation time.
@@ -52,14 +42,11 @@ public class VelocityEmailHelper implements EmailHelper {
      */
     @Inject
     public VelocityEmailHelper(SeyrenConfig seyrenConfig) {
-        this.seyrenConfig = seyrenConfig;
-        TEMPLATE_FILE_NAME = seyrenConfig.getEmailTemplateFileName();
-        TEMPLATE_CONTENT = getTemplateAsString(TEMPLATE_FILE_NAME);
-
-        TEMPLATE_SUBJECT_FILE_NAME = seyrenConfig.getEmailSubjectTemplateFileName();
-        TEMPLATE_SUBJECT_CONTENT = getTemplateAsString(TEMPLATE_SUBJECT_FILE_NAME);
+        super(seyrenConfig);
+        TEMPLATE_CONTENT = getTemplateAsString(seyrenConfig.getEmailTemplateFileName());
+        TEMPLATE_SUBJECT_CONTENT = getTemplateAsString(seyrenConfig.getEmailSubjectTemplateFileName());
     }
-    
+
     public String createSubject(Check check, Subscription subscription, List<Alert> alerts) {
         return evaluateTemplate(check, subscription, alerts, TEMPLATE_SUBJECT_CONTENT);
     }
@@ -75,26 +62,5 @@ public class VelocityEmailHelper implements EmailHelper {
         Velocity.evaluate(context, stringWriter, "EmailNotificationService", templateContent);
         return stringWriter.toString();
     }
-    
-    private VelocityContext createVelocityContext(Check check, Subscription subscription, List<Alert> alerts) {
-        VelocityContext result = new VelocityContext();
-        result.put("CHECK", check);
-        result.put("ALERTS", alerts);
-        result.put("SEYREN_URL", seyrenConfig.getBaseUrl());
-        return result;
-    }
-    
-    private String getTemplateAsString(String templateFileName) {
-        try {
-            // Handle the template filename as either a class path resource or an absolute path to the filesystem.
-            InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(templateFileName);
-            if (inputStream == null) {
-                inputStream = new FileInputStream(templateFileName);
-            }
-            return IOUtils.toString(inputStream);
-        } catch (IOException e) {
-            throw new RuntimeException("Template file could not be found on classpath at " + templateFileName);
-        }
-    }
-    
+
 }
