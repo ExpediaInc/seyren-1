@@ -164,6 +164,11 @@ public class SeyrenConfigTest {
     }
 
     @Test
+    public void defaultHipChatTemplateFileIsCorrect() {
+        assertThat(config.getHipChatTemplateFileName(), is("com/seyren/core/service/notification/hipchat-template.vm"));
+    }
+
+    @Test
     public void defaultNumOfThreadsIsCorrect() {
         assertThat(config.getNoOfThreads(), is(8));
     }

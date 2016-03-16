@@ -1,0 +1,21 @@
+<b><a href="$SEYREN_URL/#/checks/$CHECK.Id">$CHECK.Name</a></b>
+<table>
+    <thead>
+    <tr>
+        <th>Target</th>
+        <th></th>
+        <th>Value</th>
+        <th>Error Type</th>
+    </tr>
+    </thead>
+    <tbody>
+        #foreach ($ALERT in $ALERTS)
+        <tr>
+            <td>$ALERT.Target</td>
+            <td></td>
+            <td>$ALERT.Value</td>
+            <td>$ALERT.ToType</td>
+        </tr>
+        #end
+    </tbody>
+</table>

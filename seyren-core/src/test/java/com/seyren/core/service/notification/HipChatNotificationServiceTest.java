@@ -13,73 +13,96 @@
  */
 package com.seyren.core.service.notification;
 
-import static com.github.restdriver.clientdriver.RestClientDriver.*;
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
-
-import java.net.URLEncoder;
-import java.util.Arrays;
-import java.util.List;
-
+import com.github.restdriver.clientdriver.ClientDriverRequest;
+import com.github.restdriver.clientdriver.ClientDriverRule;
+import com.github.restdriver.clientdriver.capture.StringBodyCapture;
+import com.seyren.core.domain.*;
+import com.seyren.core.util.config.SeyrenConfig;
+import com.seyren.core.util.hipchat.HipChatHelper;
+import com.seyren.core.util.velocity.VelocityHipChatHelper;
+import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import com.github.restdriver.clientdriver.ClientDriverRequest.Method;
-import com.github.restdriver.clientdriver.ClientDriverRule;
-import com.seyren.core.domain.Alert;
-import com.seyren.core.domain.AlertType;
-import com.seyren.core.domain.Check;
-import com.seyren.core.domain.Subscription;
-import com.seyren.core.domain.SubscriptionType;
-import com.seyren.core.util.config.SeyrenConfig;
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Pattern;
+
+import static com.github.restdriver.clientdriver.RestClientDriver.giveEmptyResponse;
+import static com.github.restdriver.clientdriver.RestClientDriver.onRequestTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class HipChatNotificationServiceTest {
-    
-    private SeyrenConfig seyrenConfig;
+
+    private SeyrenConfig mockSeyrenConfig;
+    private HipChatHelper mockHipChatHelper;
     private NotificationService notificationService;
-    
+
     @Rule
     public ClientDriverRule clientDriver = new ClientDriverRule();
-    
+
     @Before
     public void before() {
-        seyrenConfig = new SeyrenConfig();
-        notificationService = new HipChatNotificationService(seyrenConfig, clientDriver.getBaseUrl());
+        mockSeyrenConfig = mock(SeyrenConfig.class);
+        when(mockSeyrenConfig.getBaseUrl()).thenReturn(clientDriver.getBaseUrl() + "/hipchat");
+        when(mockSeyrenConfig.getHipChatUsername()).thenReturn("LPMS");
+        when(mockSeyrenConfig.getHipChatTemplateFileName()).thenReturn("test2-hipchat-template.vm");
+
+        mockHipChatHelper = new VelocityHipChatHelper(mockSeyrenConfig);
+        notificationService = new HipChatNotificationService(mockSeyrenConfig, mockHipChatHelper, clientDriver.getBaseUrl());
     }
-    
+
     @Test
-    public void notifcationServiceCanHandleHipChatSubscription() {
+    public void notificationServiceCanHandleHipChatSubscription() {
         assertThat(notificationService.canHandle(SubscriptionType.HIPCHAT), is(true));
     }
-    
+
     @Test
-    public void basicHappyPathTest() throws Exception {
+    public void checkingOutTheHappyPath() {
+
         Check check = new Check()
                 .withEnabled(true)
                 .withName("test-check")
-                .withState(AlertType.ERROR);
+                .withState(AlertType.ERROR)
+                .withWarn(BigDecimal.ONE)
+                .withError(BigDecimal.TEN);
+
         Subscription subscription = new Subscription()
                 .withEnabled(true)
                 .withType(SubscriptionType.HIPCHAT)
                 .withTarget("target");
+
         Alert alert = new Alert()
+                .withTarget("the.target.name")
+                .withValue(BigDecimal.valueOf(12))
+                .withWarn(BigDecimal.valueOf(5))
+                .withError(BigDecimal.valueOf(10))
                 .withFromType(AlertType.OK)
-                .withToType(AlertType.ERROR);
+                .withToType(AlertType.ERROR)
+                .withTimestamp(new DateTime());
+
         List<Alert> alerts = Arrays.asList(alert);
 
-        String seyrenUrl = URLEncoder.encode(seyrenConfig.getBaseUrl(), "UTF-8");
+        String seyrenUrl = clientDriver.getBaseUrl() + "/seyren";
+
+        when(mockSeyrenConfig.getGraphiteUrl()).thenReturn(clientDriver.getBaseUrl() + "/graphite");
+        when(mockSeyrenConfig.getBaseUrl()).thenReturn(seyrenUrl);
+
+
         clientDriver.addExpectation(
                 onRequestTo("/v2/room/target/notification")
-                        .withMethod(Method.POST)
-                        .withParam("auth_token",seyrenConfig.getHipChatAuthToken())
-                        .withBody(is("message=Check+%3Ca+href%3D" + seyrenUrl + "%2F%23%2Fchecks%2Fnull%3Etest-check%3C%2Fa%3E+has+entered+its+ERROR+state."
-                                + "&color=red"
-                                + "&message_format=html"
-                                + "&notify=true"), "application/x-www-form-urlencoded"),
-                giveEmptyResponse());
-        
+                        .withMethod(ClientDriverRequest.Method.POST)
+                        .withAnyParams(),
+                giveEmptyResponse()
+        );
+
         notificationService.sendNotification(check, subscription, alerts);
+
     }
-    
+
 }

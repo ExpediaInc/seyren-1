@@ -1,17 +1,18 @@
 <div class="row">
-<div class="col-lg-12">
-    <h2><strong>Checks in an unhealthy state</strong></h2>
-    <table class="table table-bordered table-striped" ng-show="unhealthyChecks.values.length > 0">
-        <thead>
+    <div class="col-lg-12">
+        <h2><strong>Checks in an unhealthy state</strong></h2>
+        <table class="table table-bordered table-striped" ng-show="unhealthyChecks.values.length > 0">
+            <thead>
             <tr>
                 <th>Name</th>
                 <th>State</th>
+                <th>Priority</th>
                 <th>Warn</th>
                 <th>Error</th>
                 <th>Enabled</th>
             </tr>
-        </thead>
-        <tbody>
+            </thead>
+            <tbody>
             <tr ng-repeat="check in unhealthyChecks.values" ng-click="selectCheck(check.id)" style="cursor: pointer;">
                 <td title="{{ check.target }}">{{ check.name }}</td>
                 <td>
@@ -21,35 +22,50 @@
                     <span ng-show="check.state == 'ERROR'" class="label label-danger">{{ check.state }}</span>
                     <span ng-show="check.state == 'EXCEPTION'" class="label label-inverse">{{ check.state }}</span>
                 </td>
+                <td>
+                    <span ng-show="check.priority  == 'TRIVIAL'" class="label label-trivial">{{ check.priority  }}</span>
+                    <span ng-show="check.priority  == 'MINOR'" class="label label-minor">{{ check.priority  }}</span>
+                    <span ng-show="check.priority  == 'MAJOR'" class="label label-major">{{ check.priority  }}</span>
+                    <span ng-show="check.priority  == 'CRITICAL'" class="label label-critical">{{ check.priority  }}</span>
+                </td>
                 <td>{{ check.warn }}</td>
                 <td>{{ check.error }}</td>
                 <td><input type="checkbox" ng-checked="{{ check.enabled }}" ng-click="swapEnabled(check); $event.stopPropagation();" /></td>
             </tr>
-        </tbody>
-    </table>
-    <p ng-hide="unhealthyChecks.values.length > 0">No checks in an unhealthy state</p>
-</div>
+            </tbody>
+        </table>
+        <p ng-hide="unhealthyChecks.values.length > 0">No checks in an unhealthy state</p>
+    </div>
 
-<div class="col-lg-12">
-    <h2><strong>Recent alerts</strong></h2>
-    <table class="table table-bordered table-striped table-hover" ng-show="alertStream.values.length > 0">
-        <thead>
+    <div class="col-lg-12">
+        <h2><strong>Recent alerts</strong></h2>
+        <table class="table table-bordered table-striped table-hover" ng-show="alertStream.values.length > 0">
+            <thead>
             <tr>
                 <th>Timestamp</th>
                 <th>Time ago</th>
                 <th>Name</th>
+                <th>Target</th>
+                <th>Priority</th>
                 <th>Value</th>
                 <th>Warn</th>
                 <th>Error</th>
                 <th>From</th>
                 <th>To</th>
             </tr>
-        </thead>
-        <tbody>
+            </thead>
+            <tbody>
             <tr ng-repeat="alert in alertStream.values" ng-click="selectCheck(alert.checkId)" style="cursor: pointer;">
                 <td>{{ alert.timestamp | date: 'yyyy-MM-dd HH:mm:ss' }}</td>
                 <td><span am-time-ago="alert.timestamp"></span></td>
-                <td title="{{ alert.target }}">{{ checkNames[alert.checkId] }}</span></td>
+                <td title="{{ alert.target }}">{{ checkNames[alert.checkId] }}</td>
+                <td>{{ alert.target }}</td>
+                <td>
+                    <span ng-show="alert.priority  == 'TRIVIAL'" class="label label-trivial">{{ alert.priority  }}</span>
+                    <span ng-show="alert.priority  == 'MINOR'" class="label label-minor">{{ alert.priority  }}</span>
+                    <span ng-show="alert.priority  == 'MAJOR'" class="label label-major">{{ alert.priority  }}</span>
+                    <span ng-show="alert.priority  == 'CRITICAL'" class="label label-critical">{{ alert.priority  }}</span>
+                </td>
                 <td>{{ alert.value }}</td>
                 <td>{{ alert.warn }}</td>
                 <td>{{ alert.error }}</td>
@@ -68,8 +84,8 @@
                     <span ng-show="alert.toType == 'EXCEPTION'" class="label label-inverse">{{ alert.toType }}</span>
                 </td>
             </tr>
-        </tbody>
-    </table>
-    <p ng-hide="alertStream.values.length > 0">You've had no previous alerts</p>
-</div>
+            </tbody>
+        </table>
+        <p ng-hide="alertStream.values.length > 0">You've had no previous alerts</p>
+    </div>
 </div>

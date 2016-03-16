@@ -13,49 +13,48 @@
  */
 package com.seyren.core.service.notification;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import java.net.URLEncoder;
-import java.io.UnsupportedEncodingException;
-
+import com.seyren.core.domain.*;
+import com.seyren.core.exception.NotificationFailedException;
+import com.seyren.core.util.config.SeyrenConfig;
+import com.seyren.core.util.hipchat.HipChatHelper;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.seyren.core.domain.Alert;
-import com.seyren.core.domain.AlertType;
-import com.seyren.core.domain.Check;
-import com.seyren.core.domain.Subscription;
-import com.seyren.core.domain.SubscriptionType;
-import com.seyren.core.exception.NotificationFailedException;
-import com.seyren.core.util.config.SeyrenConfig;
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 
 @Named
 public class HipChatNotificationService implements NotificationService {
-    
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(HipChatNotificationService.class);
-    
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(HipChatNotificationService.class);
+
     private final SeyrenConfig seyrenConfig;
+    private final HipChatHelper hipchatHelper;
     private final String baseUrl;
-    
+
     @Inject
-    public HipChatNotificationService(SeyrenConfig seyrenConfig) {
+    public HipChatNotificationService(SeyrenConfig seyrenConfig, HipChatHelper hipchatHelper) {
         this.seyrenConfig = seyrenConfig;
+        this.hipchatHelper = hipchatHelper;
         this.baseUrl = seyrenConfig.getHipChatBaseUrl();
     }
-    
-    protected HipChatNotificationService(SeyrenConfig seyrenConfig, String baseUrl) {
+
+    protected HipChatNotificationService(SeyrenConfig seyrenConfig, HipChatHelper hipchatHelper, String baseUrl) {
         this.seyrenConfig = seyrenConfig;
+        this.hipchatHelper = hipchatHelper;
         this.baseUrl = baseUrl;
     }
-    
+
     @Override
     public void sendNotification(Check check, Subscription subscription, List<Alert> alerts) throws NotificationFailedException {
         String token = seyrenConfig.getHipChatAuthToken();
@@ -63,14 +62,14 @@ public class HipChatNotificationService implements NotificationService {
         String[] roomIds = subscription.getTarget().split(",");
         try {
             if (check.getState() == AlertType.ERROR) {
-                String message = getHipChatMessage(check);
-                sendMessage(message, MessageColor.RED, roomIds, from, token, true);
+                String message = hipchatHelper.createHipChatContent(check, subscription, alerts);
+                sendMessage(message, MessageColor.RED, roomIds, from, token, false);
             } else if (check.getState() == AlertType.WARN) {
-                String message = getHipChatMessage(check);
-                sendMessage(message, MessageColor.YELLOW, roomIds, from, token, true);
+                String message = hipchatHelper.createHipChatContent(check, subscription, alerts);
+                sendMessage(message, MessageColor.YELLOW, roomIds, from, token, false);
             } else if (check.getState() == AlertType.OK) {
-                String message = getHipChatMessage(check);
-                sendMessage(message, MessageColor.GREEN, roomIds, from, token, true);
+                String message = hipchatHelper.createHipChatContent(check, subscription, alerts);
+                sendMessage(message, MessageColor.GREEN, roomIds, from, token, false);
             } else {
                 LOGGER.warn("Did not send notification to HipChat for check in state: {}", check.getState());
             }
@@ -78,12 +77,7 @@ public class HipChatNotificationService implements NotificationService {
             throw new NotificationFailedException("Failed to send notification to HipChat", e);
         }
     }
-    
-    private String getHipChatMessage(Check check) {
-        String message = "Check <a href=" + seyrenConfig.getBaseUrl() + "/#/checks/" + check.getId() + ">" + check.getName() + "</a> has entered its " + check.getState().toString() + " state.";
-        return message;
-    }
-    
+
     private void sendMessage(String message, MessageColor color, String[] roomIds, String from, String authToken, boolean notify) {
         for (String roomId : roomIds) {
             LOGGER.info("Posting: {} to {}: {} {}", from, roomId, message, color);
@@ -102,6 +96,7 @@ public class HipChatNotificationService implements NotificationService {
 
             try {
                 List<BasicNameValuePair> parameters = new ArrayList<BasicNameValuePair>();
+                parameters.add(new BasicNameValuePair("from", from));
                 parameters.add(new BasicNameValuePair("message", message));
                 parameters.add(new BasicNameValuePair("color", color.name().toLowerCase()));
                 parameters.add(new BasicNameValuePair("message_format", "html"));
@@ -111,6 +106,7 @@ public class HipChatNotificationService implements NotificationService {
                 post.setEntity(new UrlEncodedFormEntity(parameters));
                 client.execute(post);
             } catch (Exception e) {
+                e.printStackTrace();
                 LOGGER.warn("Error posting to HipChat", e);
             } finally {
                 post.releaseConnection();
@@ -118,13 +114,13 @@ public class HipChatNotificationService implements NotificationService {
             }
         }
     }
-    
+
     @Override
     public boolean canHandle(SubscriptionType subscriptionType) {
         return subscriptionType == SubscriptionType.HIPCHAT;
     }
-    
+
     private enum MessageColor {
-        YELLOW, RED, GREEN, PURPLE, RANDOM;
+        YELLOW, RED, GREEN, PURPLE, RANDOM
     }
 }

@@ -1,0 +1,21 @@
+<b><a href="$SEYREN_URL/#/checks/$CHECK.Id">$CHECK.Name</a></b>
+<table>
+    <thead>
+    <tr>
+        <th>Timestamp</th>
+        <th>Target</th>
+        <th>Value</th>
+        <th>Error Type</th>
+    </tr>
+    </thead>
+    <tbody>
+        #foreach ($ALERT in $ALERTS)
+        <tr>
+            <td>$ALERT.Timestamp.toString("yyyy-MM-dd HH:mm:ss")</td>
+            <td>$ALERT.Target</td>
+            <td>$ALERT.Value</td>
+            <td>$ALERT.ToType</td>
+        </tr>
+        #end
+    </tbody>
+</table>

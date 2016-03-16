@@ -35,17 +35,17 @@ import com.seyren.core.util.config.SeyrenConfig;
 import com.seyren.core.util.email.EmailHelper;
 
 public class VelocityEmailHelperTest {
-    
+
     private EmailHelper emailHelper;
-    
+
     @Before
     public void before() {
         emailHelper = new VelocityEmailHelper(new SeyrenConfig());
     }
-    
+
     @Test
     public void bodyContainsRightSortsOfThings() {
-        
+
         Check check = new Check()
                 .withId("123")
                 .withEnabled(true)
@@ -65,21 +65,21 @@ public class VelocityEmailHelperTest {
                 .withFromType(AlertType.OK)
                 .withToType(AlertType.ERROR);
         List<Alert> alerts = Arrays.asList(alert);
-        
+
         String body = emailHelper.createBody(check, subscription, alerts);
-        
+
         assertThat(body, containsString("test-check"));
         assertThat(body, containsString("Some great description"));
         assertThat(body, containsString("some.value"));
         assertThat(body, containsString("2.0"));
         assertThat(body, containsString("3.0"));
         assertThat(body, containsString("4.0"));
-        
+
     }
-    
+
     @Test
     public void descriptionIsNotIncludedIfEmpty() {
-        
+
         Check check = new Check()
                 .withId("123")
                 .withEnabled(true)
@@ -99,16 +99,16 @@ public class VelocityEmailHelperTest {
                 .withFromType(AlertType.OK)
                 .withToType(AlertType.ERROR);
         List<Alert> alerts = Arrays.asList(alert);
-        
+
         String body = emailHelper.createBody(check, subscription, alerts);
-        
+
         assertThat(body, not(containsString("<p></p>")));
-        
+
     }
-    
+
     @Test
     public void bodyDoesNotContainScientificNotationOfNumber() {
-        
+
         Check check = new Check()
                 .withId("123")
                 .withEnabled(true)
@@ -127,20 +127,29 @@ public class VelocityEmailHelperTest {
                 .withFromType(AlertType.OK)
                 .withToType(AlertType.ERROR);
         List<Alert> alerts = Arrays.asList(alert);
-        
+
         String body = emailHelper.createBody(check, subscription, alerts);
-        
+
         assertThat(body, containsString("138362880"));
-        
+
     }
 
     @Test
     public void templateLocationShouldBeConfigurable() {
+        Check check = new Check()
+                .withId("123")
+                .withEnabled(true)
+                .withName("test-check")
+                .withWarn(new BigDecimal("2.0"))
+                .withError(new BigDecimal("3.0"))
+                .withState(AlertType.ERROR);
+
         SeyrenConfig mockConfiguration = mock(SeyrenConfig.class);
         when(mockConfiguration.getEmailTemplateFileName()).thenReturn("test-email-template.vm");
+        when(mockConfiguration.getGraphiteUrl()).thenReturn("http://localhost:8081/graphite");
         when(mockConfiguration.getEmailSubjectTemplateFileName()).thenReturn("test-email-template.vm");
         EmailHelper emailHelper = new VelocityEmailHelper(mockConfiguration);
-        String body = emailHelper.createBody(null, null, null);
+        String body = emailHelper.createBody(check, null, null);
         assertThat(body, containsString("Test content."));
     }
 
@@ -174,11 +183,20 @@ public class VelocityEmailHelperTest {
 
     @Test
     public void subjectTemplateLocationShouldBeConfigurable() {
+        Check check = new Check()
+                .withId("123")
+                .withEnabled(true)
+                .withName("test-check")
+                .withWarn(new BigDecimal("2.0"))
+                .withError(new BigDecimal("3.0"))
+                .withState(AlertType.ERROR);
+
         SeyrenConfig mockConfiguration = mock(SeyrenConfig.class);
         when(mockConfiguration.getEmailSubjectTemplateFileName()).thenReturn("test-email-template.vm");
+        when(mockConfiguration.getGraphiteUrl()).thenReturn("http://localhost:8081/graphite");
         when(mockConfiguration.getEmailTemplateFileName()).thenReturn("test-email-template.vm");
         EmailHelper emailHelper = new VelocityEmailHelper(mockConfiguration);
-        String subject = emailHelper.createSubject(null, null, null);
+        String subject = emailHelper.createSubject(check, null, null);
         assertThat(subject, containsString("Test content."));
     }
 }
