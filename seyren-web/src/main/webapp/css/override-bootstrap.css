@@ -55,3 +55,19 @@ body {
 }
 
 .panel-body input[type=checkbox]:checked + label { text-decoration: line-through;color: rgb(128, 144, 160); }
+
+.label-trivial {
+    background-color: #8DF3FF;
+}
+
+.label-minor {
+    background-color: #5BA8E8;
+}
+
+.label-major {
+    background-color: #245AE8;
+}
+
+.label-critical {
+    background-color: #1132FF;
+}

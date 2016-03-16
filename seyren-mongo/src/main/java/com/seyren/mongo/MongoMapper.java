@@ -34,6 +34,7 @@ public class MongoMapper {
         String description = getString(dbo, "description");
         String graphiteBaseUrl = getString(dbo, "graphiteBaseUrl");
         String target = getString(dbo, "target");
+        PriorityType priority = getPriorityType(getString(dbo, "priority"));
         String graphiteUrl = getString(dbo, "graphiteBaseUrl");
         String from = Strings.emptyToNull(getString(dbo, "from"));
         String until = Strings.emptyToNull(getString(dbo, "until"));
@@ -55,6 +56,7 @@ public class MongoMapper {
                 .withDescription(description)
                 .withGraphiteBaseUrl(graphiteBaseUrl)
                 .withTarget(target)
+                .withPriority(priority)
                 .withGraphiteBaseUrl(graphiteUrl)
                 .withFrom(from)
                 .withUntil(until)
@@ -112,6 +114,7 @@ public class MongoMapper {
         String checkId = getString(dbo, "checkId");
         BigDecimal value = getBigDecimal(dbo, "value");
         String target = getString(dbo, "target");
+        PriorityType priority = getPriorityType(getString(dbo, "priority"));
         BigDecimal warn = getBigDecimal(dbo, "warn");
         BigDecimal error = getBigDecimal(dbo, "error");
         AlertType fromType = AlertType.valueOf(getString(dbo, "fromType"));
@@ -123,6 +126,7 @@ public class MongoMapper {
                 .withCheckId(checkId)
                 .withValue(value)
                 .withTarget(target)
+                .withPriority(priority)
                 .withWarn(warn)
                 .withError(error)
                 .withFromType(fromType)
@@ -178,6 +182,9 @@ public class MongoMapper {
         map.put("description", check.getDescription());
         map.put("graphiteBaseUrl", check.getGraphiteBaseUrl());
         map.put("target", check.getTarget());
+        if (check.getPriority() != null) {
+            map.put("priority", check.getPriority().toString());
+        }
         map.put("graphiteBaseUrl", check.getGraphiteBaseUrl());
         map.put("from", check.getFrom());
         map.put("until", check.getUntil());
@@ -248,6 +255,9 @@ public class MongoMapper {
         map.put("_id", alert.getId());
         map.put("checkId", alert.getCheckId());
         map.put("target", alert.getTarget());
+        if (alert.getPriority() != null) {
+            map.put("priority", alert.getPriority().toString());
+        }
         map.put("targetHash", alert.getTargetHash());
         if (alert.getValue() != null) {
             map.put("value", alert.getValue().toPlainString());
@@ -334,5 +344,9 @@ public class MongoMapper {
     private SubscriptionType getSubscriptionType(String value) {
         return value == null ? null : SubscriptionType.valueOf(value);
     }
-    
+
+    private PriorityType getPriorityType(String value) {
+        return value == null ? null : PriorityType.valueOf(value);
+    }
+
 }

@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.Bytes;
-import com.mongodb.CommandFailureException;
+import com.mongodb.MongoCommandException;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
@@ -132,9 +132,9 @@ public class MongoStore implements ChecksStore, AlertsStore, SubscriptionsStore,
         LOGGER.info("Dropping old indices");
         try {
             getAlertsCollection().dropIndex(new BasicDBObject("checkId", 1).append("target", 1));
-        } catch (CommandFailureException e) {
-            if (e.getCode() != -5) {
-                // -5 is the code which appears when the index doesn't exist (which we're happy with, anything else is bad news) 
+        } catch (MongoCommandException e) {
+            if (e.getCode() != -1) {
+                // -1 is the code which appears when the index doesn't exist (which we're happy with, anything else is bad news)
                 throw e;
             }
         }
@@ -275,6 +275,7 @@ public class MongoStore implements ChecksStore, AlertsStore, SubscriptionsStore,
         DBObject partialObject = object("name", check.getName())
                 .with("description", check.getDescription())
                 .with("target", check.getTarget())
+                .with("priority", check.getPriority().toString() != null ? check.getPriority().toString() : null)
                 .with("graphiteBaseUrl", check.getGraphiteBaseUrl())
                 .with("from", Strings.emptyToNull(check.getFrom()))
                 .with("until", Strings.emptyToNull(check.getUntil()))
