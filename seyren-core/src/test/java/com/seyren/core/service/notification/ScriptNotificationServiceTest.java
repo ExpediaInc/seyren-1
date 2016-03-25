@@ -40,7 +40,7 @@ public class ScriptNotificationServiceTest {
     @Before
     public void before() {
         mockSeyrenConfig = mock(SeyrenConfig.class);
-        when(mockSeyrenConfig.getScriptType()).thenReturn("python");
+        when(mockSeyrenConfig.getScriptType()).thenReturn(SystemUtils.IS_OS_WINDOWS ? "py" : "python");
         when(mockSeyrenConfig.getScriptPath()).thenReturn(Thread.currentThread().getContextClassLoader().getResource("script.py").toString());
         when(mockSeyrenConfig.getBaseUrl()).thenReturn("http://somefakehostname.int");
         
