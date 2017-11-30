@@ -15,6 +15,8 @@ package com.seyren.core.domain;
 
 import java.math.BigDecimal;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.joda.time.DateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -34,14 +36,18 @@ import com.seyren.core.util.hashing.TargetHash;
  * 
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME,
+        property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = ThresholdAlert.class, name = "threshold"),
+        @JsonSubTypes.Type(value = OutlierAlert.class, name = "outlier")
+})
 public class Alert {
     
     private String id;
     private String checkId;
     private BigDecimal value;
     private String target;
-    private BigDecimal warn;
-    private BigDecimal error;
     private AlertType fromType;
     private AlertType toType;
     private DateTime timestamp;
@@ -101,33 +107,7 @@ public class Alert {
     public String getTargetHash() {
         return TargetHash.create(target);
     }
-    
-    public BigDecimal getWarn() {
-        return warn;
-    }
-    
-    public void setWarn(BigDecimal warn) {
-        this.warn = warn;
-    }
-    
-    public Alert withWarn(BigDecimal warn) {
-        setWarn(warn);
-        return this;
-    }
-    
-    public BigDecimal getError() {
-        return error;
-    }
-    
-    public void setError(BigDecimal error) {
-        this.error = error;
-    }
-    
-    public Alert withError(BigDecimal error) {
-        setError(error);
-        return this;
-    }
-    
+
     public AlertType getFromType() {
         return fromType;
     }

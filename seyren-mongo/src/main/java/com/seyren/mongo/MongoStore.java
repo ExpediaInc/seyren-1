@@ -86,13 +86,13 @@ public class MongoStore implements ChecksStore, AlertsStore, SubscriptionsStore,
      * @param mongo The mocked Mongo DB
      * @param seyrenConfig The mocked Seyren config
      */
-	protected MongoStore(DB mongo, SeyrenConfig seyrenConfig) {
-		this.seyrenConfig = seyrenConfig;
-		this.adminUsername = null;
-		this.adminPassword = null;
-		this.serviceProvider = null;
-		this.mongo = mongo;
-	}
+    protected MongoStore(DB mongo, SeyrenConfig seyrenConfig) {
+        this.seyrenConfig = seyrenConfig;
+        this.adminUsername = null;
+        this.adminPassword = null;
+        this.serviceProvider = null;
+        this.mongo = mongo;
+    }
 
     private void bootstrapMongo() {
         LOGGER.info("Bootstrapping Mongo indexes. Depending on the number of checks and alerts you've got it may take a little while.");
@@ -196,7 +196,14 @@ public class MongoStore implements ChecksStore, AlertsStore, SubscriptionsStore,
         }
         DBCursor dbc = getChecksCollection().find(query);
         while (dbc.hasNext()) {
-            checks.add(mapper.checkFrom(dbc.next()));
+            try
+            {
+                checks.add(mapper.checkFrom(dbc.next()));
+            }
+            catch (Exception e)
+            {
+                LOGGER.error("Exception while mapping check ",e);
+            }
         }
         return new SeyrenResponse<Check>()
                 .withValues(checks)
@@ -278,8 +285,6 @@ public class MongoStore implements ChecksStore, AlertsStore, SubscriptionsStore,
                 .with("graphiteBaseUrl", check.getGraphiteBaseUrl())
                 .with("from", Strings.emptyToNull(check.getFrom()))
                 .with("until", Strings.emptyToNull(check.getUntil()))
-                .with("warn", check.getWarn().toPlainString())
-                .with("error", check.getError().toPlainString())
                 .with("enabled", check.isEnabled())
                 .with("live", check.isLive())
                 .with("allowNoData", check.isAllowNoData())
@@ -288,6 +293,30 @@ public class MongoStore implements ChecksStore, AlertsStore, SubscriptionsStore,
                 .with("enableConsecutiveChecks", check.isEnableConsecutiveChecks())
                 .with("consecutiveChecks", check.getConsecutiveChecks())
                 .with("consecutiveChecksTolerance", check.getConsecutiveChecksTolerance());
+
+
+        if(check instanceof ThresholdCheck)
+        {
+            ThresholdCheck thresholdCheck = (ThresholdCheck)check;
+
+            partialObject = ((NiceDBObject)partialObject)
+                    .with("checkType","threshold")
+                    .with("warn", thresholdCheck.getWarn().toPlainString())
+                    .with("error", thresholdCheck.getError().toPlainString());
+        }
+        else
+        {
+            OutlierCheck outlierCheck = (OutlierCheck)check;
+            partialObject = ((NiceDBObject)partialObject)
+                    .with("checkType","outlier")
+                    .with("absoluteDiff", outlierCheck.getAbsoluteDiff().toPlainString())
+                    .with("relativeDiff", outlierCheck.getRelativeDiff())
+                    .with("minConsecutiveViolations",outlierCheck.getMinConsecutiveViolations())
+                    .with("asgName",outlierCheck.getAsgName());
+
+        }
+
+
         DBObject setObject = object("$set", partialObject);
 
         getChecksCollection().update(findObject, setObject);
@@ -470,7 +499,7 @@ public class MongoStore implements ChecksStore, AlertsStore, SubscriptionsStore,
      * Set the configuartion - mainly for purposes of TDD
      * @param config A mocked SeyrenConfig object
      */
-	protected void setConfig(SeyrenConfig config) {
-		this.seyrenConfig = config;
-	}
+    protected void setConfig(SeyrenConfig config) {
+        this.seyrenConfig = config;
+    }
 }

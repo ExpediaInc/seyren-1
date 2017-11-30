@@ -101,14 +101,29 @@ public class SubscriptionsBean implements SubscriptionsResource {
         check.setState(AlertType.ERROR);
         Subscription subscription = subscriptions.iterator().next();
         List<Alert> interestingAlerts = new ArrayList<Alert>();
-        Alert alert = new Alert()
-                .withTarget(check.getTarget())
+        Alert alert ;
+        if(check instanceof ThresholdCheck)
+        {
+            ThresholdCheck thresholdCheck = (ThresholdCheck)check;
+            alert = new ThresholdAlert()
+                    .withWarn(thresholdCheck.getWarn())
+                    .withError(thresholdCheck.getError());
+
+        }
+        else
+        {
+            OutlierCheck outlierCheck = (OutlierCheck) check;
+            alert = new OutlierAlert()
+                    .withRelativeDiff(outlierCheck.getRelativeDiff())
+                    .withAbsoluteDiff(outlierCheck.getAbsoluteDiff());
+        }
+
+        alert = alert.withTarget(check.getTarget())
                 .withValue(BigDecimal.valueOf(0.0))
-                .withWarn(check.getWarn())
-                .withError(check.getError())
                 .withFromType(AlertType.OK)
                 .withToType(AlertType.ERROR)
                 .withTimestamp(new DateTime());
+
         interestingAlerts.add(alert);
         for (NotificationService notificationService : notificationServices) {
             if (notificationService.canHandle(subscription.getType())) {

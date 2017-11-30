@@ -16,7 +16,7 @@ package com.seyren.core.domain;
 public enum SubscriptionType {
 
     EMAIL, PAGERDUTY, HIPCHAT, HUBOT, FLOWDOCK, HTTP, IRCCAT, PUSHOVER, LOGGER, SNMP, SLACK, TWILIO, VICTOROPS,
-    OPSGENIE, BIGPANDA, SCRIPT;
+    OPSGENIE, BIGPANDA, SCRIPT,AWS_UNHEALTHY_INSTANCE;
 
     public static String[] names() {
         SubscriptionType[] subscriptionTypes = values();
