@@ -41,7 +41,6 @@ public class EmfNotificationService implements NotificationService {
 	@Override
 	public void sendNotification(Check check, Subscription subscription, List<Alert> alerts)
 			throws NotificationFailedException {
-
 		HttpClient client = HttpClientBuilder.create().useSystemProperties().build();
 		HttpPost post;
 

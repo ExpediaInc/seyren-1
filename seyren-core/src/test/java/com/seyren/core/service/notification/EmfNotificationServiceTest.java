@@ -17,9 +17,7 @@ import static com.github.restdriver.clientdriver.RestClientDriver.*;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
-import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.List;
 import org.hamcrest.Matchers;
@@ -98,14 +96,6 @@ public class EmfNotificationServiceTest {
 		assertThat(content, Matchers.containsString("Severity=2"));
 		assertThat(content, Matchers.containsString("ExtraDetails="));
 
-	}
-
-	String decode(String data) {
-		try {
-			return URLDecoder.decode(data, "ISO-8859-1");
-		} catch (UnsupportedEncodingException e) {
-			return null;
-		}
 	}
 
 }
