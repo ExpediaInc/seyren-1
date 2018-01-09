@@ -34,6 +34,11 @@ public class EmfNotificationService implements NotificationService {
 	}
 
 	@Override
+	public boolean canHandle(SubscriptionType subscriptionType) {
+		return subscriptionType == SubscriptionType.EMF;
+	}
+
+	@Override
 	public void sendNotification(Check check, Subscription subscription, List<Alert> alerts)
 			throws NotificationFailedException {
 
@@ -74,22 +79,32 @@ public class EmfNotificationService implements NotificationService {
 
 	}
 
-	@Override
-	public boolean canHandle(SubscriptionType subscriptionType) {
-		return subscriptionType == SubscriptionType.EMF;
+	private List<BasicNameValuePair> getParameters(Check check) {
+		String description = getDescription(check);
+		String url = String.format("%s/#/checks/%s", seyrenConfig.getBaseUrl(), check.getId());
+		int severity = getSeverity(check);
+		return buildParameters(check, description, url, severity);
 	}
 
-	private List<BasicNameValuePair> getParameters(Check check) {
-
-		int severity = getSeverity(check);
-		String url = String.format("%s/#/checks/%s", seyrenConfig.getBaseUrl(), check.getId());
-		String description;
+	private String getDescription(Check check) {
+		String description = "";
 		if (StringUtils.isNotBlank(check.getDescription())) {
 			description = String.format("\n> %s", check.getDescription());
-		} else {
-			description = "";
 		}
+		return description;
+	}
 
+	private int getSeverity(Check check) {
+		int severity = 4;
+		if (check.getState() == AlertType.ERROR) {
+			severity = 2;
+		} else if (check.getState() == AlertType.WARN) {
+			severity = 1;
+		}
+		return severity;
+	}
+
+	private List<BasicNameValuePair> buildParameters(Check check, String description, String url, int severity) {
 		List<BasicNameValuePair> parameters = new ArrayList<BasicNameValuePair>();
 		parameters.add(new BasicNameValuePair("Host", check.getTarget()));
 		parameters.add(new BasicNameValuePair("Source", "Seyren"));
@@ -99,16 +114,5 @@ public class EmfNotificationService implements NotificationService {
 		parameters.add(new BasicNameValuePair("Severity", Integer.toString(severity)));
 		parameters.add(new BasicNameValuePair("ExtraDetails", url));
 		return parameters;
-	}
-
-	private int getSeverity(Check check) {
-
-		int severity = 4;
-		if (check.getState() == AlertType.ERROR) {
-			severity = 2;
-		} else if (check.getState() == AlertType.WARN) {
-			severity = 1;
-		}
-		return severity;
 	}
 }
