@@ -43,7 +43,7 @@ public class EmfNotificationService implements NotificationService {
 	@Override
 	public void sendNotification(Check check, Subscription subscription, List<Alert> alerts)
 			throws NotificationFailedException {
-		
+
 		HttpClient client = HttpClientBuilder.create().useSystemProperties().build();
 		HttpPost post;
 
@@ -101,7 +101,7 @@ public class EmfNotificationService implements NotificationService {
 		int severity = getSeverity(check);
 		return buildParameters(check, description, url, severity);
 	}
-	
+
 	private List<BasicNameValuePair> buildParameters(Check check, String description, String url, int severity) {
 		List<BasicNameValuePair> parameters = new ArrayList<BasicNameValuePair>();
 		parameters.add(new BasicNameValuePair("Host", check.getTarget()));
@@ -113,7 +113,7 @@ public class EmfNotificationService implements NotificationService {
 		parameters.add(new BasicNameValuePair("ExtraDetails", url));
 		return parameters;
 	}
-	
+
 	private String getDescription(Check check) {
 		String description = "";
 		if (StringUtils.isNotBlank(check.getDescription())) {
@@ -124,9 +124,10 @@ public class EmfNotificationService implements NotificationService {
 
 	private int getSeverity(Check check) {
 		int severity = 4;
-		if (check.getState() == AlertType.ERROR) {
+		AlertType state = check.getState();
+		if (state == AlertType.ERROR) {
 			severity = 2;
-		} else if (check.getState() == AlertType.WARN) {
+		} else if (state == AlertType.WARN) {
 			severity = 1;
 		}
 		return severity;
