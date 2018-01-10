@@ -53,9 +53,10 @@ public class EmfNotificationServiceTest {
 
 	@Test
 	public void notifcationServiceCanOnlyHandleEmfSubscription() {
-		assertThat(notificationService.canHandle(SubscriptionType.EMF), is(true));
+		assertThat(notificationService.canHandle(SubscriptionType.DC_EMF), is(true));
+		assertThat(notificationService.canHandle(SubscriptionType.AWS_EMF), is(true));
 		for (SubscriptionType type : SubscriptionType.values()) {
-			if (type == SubscriptionType.EMF) {
+			if (type == SubscriptionType.DC_EMF || type == SubscriptionType.AWS_EMF) {
 				continue;
 			}
 			assertThat(notificationService.canHandle(type), is(false));
@@ -72,7 +73,7 @@ public class EmfNotificationServiceTest {
 				.withName("check-name").withDescription("Testing Description").withTarget("the.target.name")
 				.withState(AlertType.ERROR).withId("testing");
 
-		Subscription subscription = new Subscription().withType(SubscriptionType.EMF).withTarget("testing_app_key");
+		Subscription subscription = new Subscription().withType(SubscriptionType.DC_EMF).withTarget("testing_app_key");
 
 		DateTime timestamp = new DateTime(1420070400000L);
 

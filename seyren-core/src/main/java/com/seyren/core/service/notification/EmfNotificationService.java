@@ -22,6 +22,8 @@ import com.seyren.core.domain.SubscriptionType;
 import com.seyren.core.exception.NotificationFailedException;
 import com.seyren.core.util.config.SeyrenConfig;
 
+//ONLY difference in AWS and CH EMF apart from having different end points is that an authentication token is required for the former.
+
 @Named
 public class EmfNotificationService implements NotificationService {
 
@@ -35,7 +37,7 @@ public class EmfNotificationService implements NotificationService {
 
 	@Override
 	public boolean canHandle(SubscriptionType subscriptionType) {
-		return subscriptionType == SubscriptionType.EMF;
+		return (subscriptionType == SubscriptionType.DC_EMF || subscriptionType == SubscriptionType.AWS_EMF);
 	}
 
 	@Override
@@ -45,7 +47,6 @@ public class EmfNotificationService implements NotificationService {
 		HttpPost post;
 
 		String emfUrl = seyrenConfig.getEmfUrl();
-
 		if (StringUtils.isNotBlank(emfUrl)) {
 			post = new HttpPost(emfUrl);
 		} else {
@@ -55,6 +56,10 @@ public class EmfNotificationService implements NotificationService {
 
 		post.setHeader("Accept", "application/json");
 		post.setHeader("Content-type", "application/json");
+
+		if (subscription.getType() == SubscriptionType.AWS_EMF) {
+			post.setHeader("Ocp-Apim-Subscription-Key", seyrenConfig.getEmfSubKey());
+		}
 
 		List<BasicNameValuePair> parameters = getParameters(check);
 
@@ -75,7 +80,6 @@ public class EmfNotificationService implements NotificationService {
 			post.releaseConnection();
 			HttpClientUtils.closeQuietly(client);
 		}
-
 	}
 
 	private List<BasicNameValuePair> getParameters(Check check) {

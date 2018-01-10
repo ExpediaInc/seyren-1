@@ -98,6 +98,7 @@ public class SeyrenConfig {
 	private final String scriptResourceUrls;
 	private final String graphiteRefreshRate;
 	private final String emfUrl;
+	private final String emfSubKey;
 
 	public SeyrenConfig() {
 
@@ -207,6 +208,7 @@ public class SeyrenConfig {
 
 		// EMF
 		this.emfUrl = configOrDefault("EMF_URL", "");
+		this.emfSubKey = configOrDefault("EMF_SUB_KEY", "");
 
 	}
 
@@ -542,6 +544,11 @@ public class SeyrenConfig {
 	@JsonIgnore
 	public String getEmfUrl() {
 		return emfUrl;
+	}
+
+	@JsonIgnore
+	public String getEmfSubKey() {
+		return emfSubKey;
 	}
 
 	private static String configOrDefault(String propertyName, String defaultValue) {
