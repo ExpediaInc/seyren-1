@@ -22,7 +22,7 @@ import com.seyren.core.domain.SubscriptionType;
 import com.seyren.core.exception.NotificationFailedException;
 import com.seyren.core.util.config.SeyrenConfig;
 
-//ONLY difference in AWS and CH EMF apart from having different end points is that an authentication token is required for the former.
+//ONLY difference in AWS and Date center EMF, apart from having different end points is that an authentication token is required for the former.
 
 @Named
 public class EmfNotificationService implements NotificationService {
@@ -37,12 +37,13 @@ public class EmfNotificationService implements NotificationService {
 
 	@Override
 	public boolean canHandle(SubscriptionType subscriptionType) {
-		return (subscriptionType == SubscriptionType.DC_EMF || subscriptionType == SubscriptionType.AWS_EMF);
+		return isDCSub(subscriptionType) || isAWSSub(subscriptionType);
 	}
 
 	@Override
 	public void sendNotification(Check check, Subscription subscription, List<Alert> alerts)
 			throws NotificationFailedException {
+		
 		HttpClient client = HttpClientBuilder.create().useSystemProperties().build();
 		HttpPost post;
 
@@ -54,13 +55,7 @@ public class EmfNotificationService implements NotificationService {
 			return;
 		}
 
-		post.setHeader("Accept", "application/json");
-		post.setHeader("Content-type", "application/json");
-
-		if (subscription.getType() == SubscriptionType.AWS_EMF) {
-			post.setHeader("Ocp-Apim-Subscription-Key", seyrenConfig.getEmfSubKey());
-		}
-
+		post = setHeaders(post, subscription.getType());
 		List<BasicNameValuePair> parameters = getParameters(check);
 
 		try {
@@ -80,6 +75,24 @@ public class EmfNotificationService implements NotificationService {
 			post.releaseConnection();
 			HttpClientUtils.closeQuietly(client);
 		}
+	}
+
+	private HttpPost setHeaders(HttpPost post, SubscriptionType subscriptionType) {
+		post.setHeader("Accept", "application/json");
+		post.setHeader("Content-type", "application/json");
+
+		if (isAWSSub(subscriptionType)) {
+			post.setHeader("Ocp-Apim-Subscription-Key", seyrenConfig.getEmfSubKey());
+		}
+		return post;
+	}
+
+	private boolean isAWSSub(SubscriptionType subscriptionType) {
+		return subscriptionType == SubscriptionType.AWS_EMF;
+	}
+
+	private boolean isDCSub(SubscriptionType subscriptionType) {
+		return subscriptionType == SubscriptionType.DC_EMF;
 	}
 
 	private List<BasicNameValuePair> getParameters(Check check) {
