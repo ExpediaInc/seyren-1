@@ -101,7 +101,19 @@ public class EmfNotificationService implements NotificationService {
 		int severity = getSeverity(check);
 		return buildParameters(check, description, url, severity);
 	}
-
+	
+	private List<BasicNameValuePair> buildParameters(Check check, String description, String url, int severity) {
+		List<BasicNameValuePair> parameters = new ArrayList<BasicNameValuePair>();
+		parameters.add(new BasicNameValuePair("Host", check.getTarget()));
+		parameters.add(new BasicNameValuePair("Source", "Seyren"));
+		parameters.add(new BasicNameValuePair("NetworkDevice", null));
+		parameters.add(new BasicNameValuePair("EventType", "EventType"));
+		parameters.add(new BasicNameValuePair("Summary", description));
+		parameters.add(new BasicNameValuePair("Severity", Integer.toString(severity)));
+		parameters.add(new BasicNameValuePair("ExtraDetails", url));
+		return parameters;
+	}
+	
 	private String getDescription(Check check) {
 		String description = "";
 		if (StringUtils.isNotBlank(check.getDescription())) {
@@ -120,15 +132,4 @@ public class EmfNotificationService implements NotificationService {
 		return severity;
 	}
 
-	private List<BasicNameValuePair> buildParameters(Check check, String description, String url, int severity) {
-		List<BasicNameValuePair> parameters = new ArrayList<BasicNameValuePair>();
-		parameters.add(new BasicNameValuePair("Host", check.getTarget()));
-		parameters.add(new BasicNameValuePair("Source", "Seyren"));
-		parameters.add(new BasicNameValuePair("NetworkDevice", null));
-		parameters.add(new BasicNameValuePair("EventType", "EventType"));
-		parameters.add(new BasicNameValuePair("Summary", description));
-		parameters.add(new BasicNameValuePair("Severity", Integer.toString(severity)));
-		parameters.add(new BasicNameValuePair("ExtraDetails", url));
-		return parameters;
-	}
 }
