@@ -15,15 +15,14 @@ package com.seyren.core.domain;
 
 public enum SubscriptionType {
 
-    EMAIL, PAGERDUTY, HIPCHAT, HUBOT, FLOWDOCK, HTTP, IRCCAT, PUSHOVER, LOGGER, SNMP, SLACK, TWILIO, VICTOROPS,
-    OPSGENIE, BIGPANDA, SCRIPT,AWS_UNHEALTHY_INSTANCE;
+	EMAIL, PAGERDUTY, HIPCHAT, HUBOT, FLOWDOCK, HTTP, IRCCAT, PUSHOVER, LOGGER, SNMP, SLACK, TWILIO, VICTOROPS, OPSGENIE, BIGPANDA, SCRIPT, AWS_UNHEALTHY_INSTANCE, DC_EMF, AWS_EMF;
 
-    public static String[] names() {
-        SubscriptionType[] subscriptionTypes = values();
-        String[] names = new String[subscriptionTypes.length];
-        for (int i = 0; i < subscriptionTypes.length; i++) {
-            names[i] = subscriptionTypes[i].name();
-        }
-        return names;
-    }
+	public static String[] names() {
+		SubscriptionType[] subscriptionTypes = values();
+		String[] names = new String[subscriptionTypes.length];
+		for (int i = 0; i < subscriptionTypes.length; i++) {
+			names[i] = subscriptionTypes[i].name();
+		}
+		return names;
+	}
 }
