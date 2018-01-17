@@ -57,9 +57,9 @@ public class EmfNotificationService implements NotificationService {
 
 		post = setHeaders(post, subscription.getType());
 		List<BasicNameValuePair> parameters = getParameters(check, subscription);
-
+                LOGGER.info("> parameters: {}", parameters);
 		try {
-			post.setEntity(new UrlEncodedFormEntity(parameters));
+			post.setEntity(parameters);
 			if (LOGGER.isDebugEnabled()) {
 				LOGGER.info("> parameters: {}", parameters);
 			}
