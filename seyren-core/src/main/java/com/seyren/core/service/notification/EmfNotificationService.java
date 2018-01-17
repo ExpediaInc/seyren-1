@@ -56,7 +56,7 @@ public class EmfNotificationService implements NotificationService {
 		}
 
 		post = setHeaders(post, subscription.getType());
-		List<BasicNameValuePair> parameters = getParameters(check);
+		List<BasicNameValuePair> parameters = getParameters(check, subscription);
 
 		try {
 			post.setEntity(new UrlEncodedFormEntity(parameters));
@@ -95,19 +95,19 @@ public class EmfNotificationService implements NotificationService {
 		return subscriptionType == SubscriptionType.DC_EMF;
 	}
 
-	private List<BasicNameValuePair> getParameters(Check check) {
+	private List<BasicNameValuePair> getParameters(Check check, Subscription sub) {
 		String description = getDescription(check);
 		String url = String.format("%s/#/checks/%s", seyrenConfig.getBaseUrl(), check.getId());
 		int severity = getSeverity(check);
-		return buildParameters(check, description, url, severity);
+		return buildParameters(sub, description, url, severity);
 	}
 
-	private List<BasicNameValuePair> buildParameters(Check check, String description, String url, int severity) {
+	private List<BasicNameValuePair> buildParameters(Subscription sub, String description, String url, int severity) {
 		List<BasicNameValuePair> parameters = new ArrayList<BasicNameValuePair>();
-		parameters.add(new BasicNameValuePair("Host", check.getTarget()));
+		parameters.add(new BasicNameValuePair("Host", sub.getTarget()));
 		parameters.add(new BasicNameValuePair("Source", "Seyren"));
 		parameters.add(new BasicNameValuePair("NetworkDevice", null));
-		parameters.add(new BasicNameValuePair("EventType", "EventType"));
+		parameters.add(new BasicNameValuePair("EventType", "AQ-Seyren"));
 		parameters.add(new BasicNameValuePair("Summary", description));
 		parameters.add(new BasicNameValuePair("Severity", Integer.toString(severity)));
 		parameters.add(new BasicNameValuePair("ExtraDetails", url));
