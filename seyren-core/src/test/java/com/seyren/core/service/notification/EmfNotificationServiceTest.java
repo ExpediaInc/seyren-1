@@ -91,7 +91,7 @@ public class EmfNotificationServiceTest {
 		notificationService.sendNotification(check, subscription, alerts);
 
 		String content = bodyCapture.getContent();
-		assertThat(content, Matchers.containsString("Host=the.target.name"));
+		assertThat(content, Matchers.containsString("Host=testing_app_key"));
 		assertThat(content, Matchers.containsString("Source=Seyren"));
 		assertThat(content, Matchers.containsString("Summary="));
 		assertThat(content, Matchers.containsString("Severity=2"));
