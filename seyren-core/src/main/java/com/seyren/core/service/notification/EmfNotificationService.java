@@ -1,18 +1,17 @@
 package com.seyren.core.service.notification;
 
-import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.HttpClientUtils;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONObject;
 import org.slf4j.LoggerFactory;
 import com.seyren.core.domain.Alert;
 import com.seyren.core.domain.AlertType;
@@ -45,8 +44,7 @@ public class EmfNotificationService implements NotificationService {
 			throws NotificationFailedException {
 
 		HttpClient client = HttpClientBuilder.create().useSystemProperties().build();
-		HttpPost post;
-
+		HttpPost post = new HttpPost();
 		String emfUrl = seyrenConfig.getEmfUrl();
 		if (StringUtils.isNotBlank(emfUrl)) {
 			post = new HttpPost(emfUrl);
@@ -56,10 +54,11 @@ public class EmfNotificationService implements NotificationService {
 		}
 
 		post = setHeaders(post, subscription.getType());
-		List<BasicNameValuePair> parameters = getParameters(check, subscription);
-                LOGGER.info("> parameters: {}", parameters);
+		JSONObject parameters = getParameters(check, subscription);
+		LOGGER.info("> emfUrl: {}", emfUrl);
+		LOGGER.info("> parameters: {}", parameters);
 		try {
-			post.setEntity(parameters);
+			post.setEntity(new StringEntity(parameters.toString()));
 			if (LOGGER.isDebugEnabled()) {
 				LOGGER.info("> parameters: {}", parameters);
 			}
@@ -95,23 +94,23 @@ public class EmfNotificationService implements NotificationService {
 		return subscriptionType == SubscriptionType.DC_EMF;
 	}
 
-	private List<BasicNameValuePair> getParameters(Check check, Subscription sub) {
+	private JSONObject getParameters(Check check, Subscription sub) {
 		String description = getDescription(check);
 		String url = String.format("%s/#/checks/%s", seyrenConfig.getBaseUrl(), check.getId());
 		int severity = getSeverity(check);
 		return buildParameters(sub, description, url, severity);
 	}
 
-	private List<BasicNameValuePair> buildParameters(Subscription sub, String description, String url, int severity) {
-		List<BasicNameValuePair> parameters = new ArrayList<BasicNameValuePair>();
-		parameters.add(new BasicNameValuePair("Host", sub.getTarget()));
-		parameters.add(new BasicNameValuePair("Source", "Seyren"));
-		parameters.add(new BasicNameValuePair("NetworkDevice", null));
-		parameters.add(new BasicNameValuePair("EventType", "AQ-Seyren"));
-		parameters.add(new BasicNameValuePair("Summary", description));
-		parameters.add(new BasicNameValuePair("Severity", Integer.toString(severity)));
-		parameters.add(new BasicNameValuePair("ExtraDetails", url));
-		return parameters;
+	private JSONObject buildParameters(Subscription sub, String description, String url, int severity) {
+		JSONObject jsonObj = new JSONObject();
+		jsonObj.put("Host", sub.getTarget());
+		jsonObj.put("Source", "Seyren");
+		jsonObj.put("NetworkDevice", "");
+		jsonObj.put("EventType", "AQ-Seyren");
+		jsonObj.put("Summary", description);
+		jsonObj.put("Severity", Integer.toString(severity));
+		jsonObj.put("ExtraDetails", url);
+		return jsonObj;
 	}
 
 	private String getDescription(Check check) {

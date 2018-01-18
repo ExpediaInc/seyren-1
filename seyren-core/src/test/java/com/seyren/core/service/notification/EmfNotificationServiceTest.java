@@ -14,6 +14,7 @@
 package com.seyren.core.service.notification;
 
 import static com.github.restdriver.clientdriver.RestClientDriver.*;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -89,13 +90,10 @@ public class EmfNotificationServiceTest {
 				.capturingBodyIn(bodyCapture).withHeader("accept", "application/json"), giveEmptyResponse());
 
 		notificationService.sendNotification(check, subscription, alerts);
-
 		String content = bodyCapture.getContent();
-		assertThat(content, Matchers.containsString("Host=testing_app_key"));
-		assertThat(content, Matchers.containsString("Source=Seyren"));
-		assertThat(content, Matchers.containsString("Summary="));
-		assertThat(content, Matchers.containsString("Severity=2"));
-		assertThat(content, Matchers.containsString("ExtraDetails="));
+		assertThat(content, containsString("\"EventType\":\"AQ-Seyren\""));
+		assertThat(content, containsString("\"Source\":\"Seyren\""));
+		assertThat(content, containsString("\"Host\":\"testing_app_key\""));
 
 	}
 
