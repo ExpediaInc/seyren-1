@@ -105,7 +105,6 @@ public class EmfNotificationService implements NotificationService {
 		JSONObject jsonObj = new JSONObject();
 		jsonObj.put("Host", sub.getTarget());
 		jsonObj.put("Source", "Seyren");
-		jsonObj.put("NetworkDevice", "");
 		jsonObj.put("EventType", "AQ-Seyren");
 		jsonObj.put("Summary", description);
 		jsonObj.put("Severity", Integer.toString(severity));
