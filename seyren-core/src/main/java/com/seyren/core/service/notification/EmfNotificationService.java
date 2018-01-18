@@ -1,5 +1,6 @@
 package com.seyren.core.service.notification;
 
+import java.net.URI;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -8,9 +9,10 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.HttpClientUtils;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicResponseHandler;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
 import org.json.JSONObject;
 import org.slf4j.LoggerFactory;
 import com.seyren.core.domain.Alert;
@@ -43,26 +45,24 @@ public class EmfNotificationService implements NotificationService {
 	public void sendNotification(Check check, Subscription subscription, List<Alert> alerts)
 			throws NotificationFailedException {
 
-		HttpClient client = HttpClientBuilder.create().useSystemProperties().build();
+		HttpClient client = HttpClients.createDefault();
 		HttpPost post = new HttpPost();
 		String emfUrl = seyrenConfig.getEmfUrl();
-		if (StringUtils.isNotBlank(emfUrl)) {
-			post = new HttpPost(emfUrl);
-		} else {
-			LOGGER.warn("EMF API URL in Seyren Config needs to be set before sending notifications to EMF");
-			return;
-		}
-
-		post = setHeaders(post, subscription.getType());
 		JSONObject parameters = getParameters(check, subscription);
-		LOGGER.info("> emfUrl: {}", emfUrl);
-		LOGGER.info("> parameters: {}", parameters);
+		LOGGER.trace("> emfUrl: {}", emfUrl);
+		LOGGER.trace("> parameters: {}", parameters);
+
 		try {
+			URIBuilder builder = new URIBuilder(emfUrl);
+			URI uri = builder.build();
+			post = new HttpPost(uri);
+			post = setHeaders(post, subscription.getType());
 			post.setEntity(new StringEntity(parameters.toString()));
 			if (LOGGER.isDebugEnabled()) {
 				LOGGER.info("> parameters: {}", parameters);
 			}
 			HttpResponse response = client.execute(post);
+			LOGGER.trace("> emfResponse: {}", response.getStatusLine());
 			if (LOGGER.isDebugEnabled()) {
 				LOGGER.info("> parameters: {}", parameters);
 				LOGGER.debug("Status: {}, Body: {}", response.getStatusLine(),
@@ -79,7 +79,6 @@ public class EmfNotificationService implements NotificationService {
 	private HttpPost setHeaders(HttpPost post, SubscriptionType subscriptionType) {
 		post.setHeader("Accept", "application/json");
 		post.setHeader("Content-type", "application/json");
-
 		if (isAWSSub(subscriptionType)) {
 			post.setHeader("Ocp-Apim-Subscription-Key", seyrenConfig.getEmfSubKey());
 		}
