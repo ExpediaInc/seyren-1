@@ -112,7 +112,7 @@ public class EmfNotificationService implements NotificationService {
 	}
 
 	private String getDescription(Check check) {
-		String description = "";
+		String description = "seyren-alert";
 		if (StringUtils.isNotBlank(check.getDescription())) {
 			description = String.format("\n> %s", check.getDescription());
 		}
