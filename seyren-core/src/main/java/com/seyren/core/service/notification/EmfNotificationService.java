@@ -52,6 +52,8 @@ public class EmfNotificationService implements NotificationService {
 		HttpPost post = new HttpPost();
 		String emfUrl = seyrenConfig.getEmfUrl();
 		JSONObject parameters = getParameters(check, alerts);
+		LOGGER.trace("> emfUrl: {}", emfUrl);
+		LOGGER.trace("> parameters: {}", parameters);
 
 		try {
 			URIBuilder builder = new URIBuilder(emfUrl);
@@ -71,7 +73,6 @@ public class EmfNotificationService implements NotificationService {
 			}
 		} catch (Exception e) {
 			LOGGER.warn("> parameters: {}", parameters);
-			LOGGER.warn("> emfUrl: {}", emfUrl);
 			LOGGER.warn("Error posting to EMF", e);
 		} finally {
 			post.releaseConnection();
@@ -125,7 +126,7 @@ public class EmfNotificationService implements NotificationService {
 	}
 
 	private String getDescription(Check check) {
-		String description = "";
+		String description = "seyren-alert";
 		if (StringUtils.isNotBlank(check.getDescription())) {
 			description = String.format("\n> %s", check.getDescription());
 		}
