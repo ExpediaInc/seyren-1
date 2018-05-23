@@ -1,5 +1,6 @@
 package com.seyren.core.service.notification;
 
+import static com.google.common.collect.Iterables.*;
 import java.net.URI;
 import java.util.List;
 import javax.inject.Inject;
@@ -22,6 +23,8 @@ import com.seyren.core.domain.Subscription;
 import com.seyren.core.domain.SubscriptionType;
 import com.seyren.core.exception.NotificationFailedException;
 import com.seyren.core.util.config.SeyrenConfig;
+import com.google.common.base.Joiner;
+import com.google.common.base.Function;
 
 //ONLY difference in AWS and Date center EMF, apart from having different end points is that an authentication token is required for the former.
 
@@ -48,9 +51,7 @@ public class EmfNotificationService implements NotificationService {
 		HttpClient client = HttpClients.createDefault();
 		HttpPost post = new HttpPost();
 		String emfUrl = seyrenConfig.getEmfUrl();
-		JSONObject parameters = getParameters(check, subscription);
-		LOGGER.trace("> emfUrl: {}", emfUrl);
-		LOGGER.trace("> parameters: {}", parameters);
+		JSONObject parameters = getParameters(check, alerts);
 
 		try {
 			URIBuilder builder = new URIBuilder(emfUrl);
@@ -69,6 +70,8 @@ public class EmfNotificationService implements NotificationService {
 						new BasicResponseHandler().handleResponse(response));
 			}
 		} catch (Exception e) {
+			LOGGER.warn("> parameters: {}", parameters);
+			LOGGER.warn("> emfUrl: {}", emfUrl);
 			LOGGER.warn("Error posting to EMF", e);
 		} finally {
 			post.releaseConnection();
@@ -93,26 +96,36 @@ public class EmfNotificationService implements NotificationService {
 		return subscriptionType == SubscriptionType.DC_EMF;
 	}
 
-	private JSONObject getParameters(Check check, Subscription sub) {
+	private JSONObject getParameters(Check check, List<Alert> alerts) {
+		String alertsString = getAlertString(alerts);
 		String description = getDescription(check);
 		String url = String.format("%s/#/checks/%s", seyrenConfig.getBaseUrl(), check.getId());
 		int severity = getSeverity(check);
-		return buildParameters(sub, description, url, severity);
+		return buildParameters(check, alertsString, description, url, severity);
 	}
 
-	private JSONObject buildParameters(Subscription sub, String description, String url, int severity) {
+	private JSONObject buildParameters(Check check, String alertsString, String description, String url, int severity) {
 		JSONObject jsonObj = new JSONObject();
-		jsonObj.put("Host", sub.getTarget());
+		jsonObj.put("Host", alertsString);
 		jsonObj.put("Source", "Seyren");
-		jsonObj.put("EventType", "AQ-Seyren");
+		jsonObj.put("EventType", check.getName());
 		jsonObj.put("Summary", description);
 		jsonObj.put("Severity", Integer.toString(severity));
 		jsonObj.put("ExtraDetails", url);
 		return jsonObj;
 	}
 
+	private String getAlertString(List<Alert> alerts) {
+		return Joiner.on("\n").join(transform(alerts, new Function<Alert, String>() {
+			@Override
+			public String apply(Alert input) {
+				return String.format("%s", input.getTarget());
+			}
+		}));
+	}
+
 	private String getDescription(Check check) {
-		String description = "seyren-alert";
+		String description = "";
 		if (StringUtils.isNotBlank(check.getDescription())) {
 			description = String.format("\n> %s", check.getDescription());
 		}

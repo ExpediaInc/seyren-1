@@ -21,7 +21,6 @@ import static org.mockito.Mockito.*;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
-import org.hamcrest.Matchers;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Rule;
@@ -48,7 +47,6 @@ public class EmfNotificationServiceTest {
 	@Before
 	public void before() {
 		mockSeyrenConfig = mock(SeyrenConfig.class);
-		;
 		notificationService = new EmfNotificationService(mockSeyrenConfig);
 	}
 
@@ -81,8 +79,12 @@ public class EmfNotificationServiceTest {
 		Alert alert = new ThresholdAlert().withWarn(BigDecimal.valueOf(5)).withError(BigDecimal.valueOf(10))
 				.withTarget("the.target.name").withValue(BigDecimal.valueOf(12)).withFromType(AlertType.WARN)
 				.withToType(AlertType.ERROR).withTimestamp(timestamp);
+		
+		Alert alert1 = new ThresholdAlert().withWarn(BigDecimal.valueOf(5)).withError(BigDecimal.valueOf(10))
+				.withTarget("the.target.name1").withValue(BigDecimal.valueOf(12)).withFromType(AlertType.WARN)
+				.withToType(AlertType.ERROR).withTimestamp(timestamp);
 
-		List<Alert> alerts = Arrays.asList(alert);
+		List<Alert> alerts = Arrays.asList(alert, alert1);
 
 		StringBodyCapture bodyCapture = new StringBodyCapture();
 
@@ -91,9 +93,10 @@ public class EmfNotificationServiceTest {
 
 		notificationService.sendNotification(check, subscription, alerts);
 		String content = bodyCapture.getContent();
-		assertThat(content, containsString("\"EventType\":\"AQ-Seyren\""));
+		
+		assertThat(content, containsString("\"EventType\":\"check-name\""));
 		assertThat(content, containsString("\"Source\":\"Seyren\""));
-		assertThat(content, containsString("\"Host\":\"testing_app_key\""));
+		assertThat(content, containsString("\"Host\":\"the.target.name\\nthe.target.name1\""));
 
 	}
 
