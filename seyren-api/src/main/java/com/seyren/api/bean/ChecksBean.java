@@ -32,23 +32,27 @@ import com.seyren.core.domain.Check;
 import com.seyren.core.domain.SeyrenResponse;
 import com.seyren.core.store.ChecksStore;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Named
 public class ChecksBean implements ChecksResource {
-    
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChecksBean.class);
     private ChecksStore checksStore;
-    
+
     @Inject
     public ChecksBean(ChecksStore checksStore) {
         this.checksStore = checksStore;
     }
-    
+
     @Override
-    public Response getChecks(Set<String> states, Boolean enabled, String name, List<String> fields, List<String> regexes) {
+    public Response getChecks(Set<String> states, Boolean enabled, String name, List<String> fields,
+            List<String> regexes) {
         SeyrenResponse<Check> checks;
         if (states != null && !states.isEmpty()) {
             checks = checksStore.getChecksByState(states, enabled);
-        } else if (fields != null && !fields.isEmpty() &&
-                regexes != null && !regexes.isEmpty()) {
+        } else if (fields != null && !fields.isEmpty() && regexes != null && !regexes.isEmpty()) {
             List<Pattern> patterns = Lists.transform(regexes, new Function<String, Pattern>() {
                 @Override
                 public Pattern apply(String regex) {
@@ -71,7 +75,7 @@ public class ChecksBean implements ChecksResource {
         Check stored = checksStore.createCheck(check);
         return Response.created(uri(stored.getId())).build();
     }
-    
+
     @Override
     public Response updateCheck(String checkId, Check check) {
         Check stored = checksStore.getCheck(checkId);
@@ -79,9 +83,11 @@ public class ChecksBean implements ChecksResource {
             return Response.status(Status.NOT_FOUND).build();
         }
         stored = checksStore.saveCheck(check);
+        LOGGER.info("Check={} :: Message='Check updated'", checkId);
+
         return Response.ok(stored).build();
     }
-    
+
     @Override
     public Response getCheck(String checkId) {
         Check check = checksStore.getCheck(checkId);
@@ -90,13 +96,15 @@ public class ChecksBean implements ChecksResource {
         }
         return Response.ok(check).build();
     }
-    
+
     @Override
     public Response deleteCheck(String checkId) {
         checksStore.deleteCheck(checkId);
+        LOGGER.info("Check={} :: Message='Check deleted'", checkId);
+
         return Response.noContent().build();
     }
-    
+
     private URI uri(String checkId) {
         try {
             return new URI("checks/" + checkId);
@@ -104,5 +112,5 @@ public class ChecksBean implements ChecksResource {
             throw new RuntimeException(e);
         }
     }
-    
+
 }
