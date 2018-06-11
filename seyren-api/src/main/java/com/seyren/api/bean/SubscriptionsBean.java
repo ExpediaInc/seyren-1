@@ -50,8 +50,11 @@ public class SubscriptionsBean implements SubscriptionsResource {
     private final SeyrenConfig seyrenConfig;
 
     @Inject
-    public SubscriptionsBean(ChecksStore checksStore, SubscriptionsStore subscriptionsStore,
-            List<NotificationService> notificationServices, PermissionsStore permissionsStore,
+    public SubscriptionsBean(
+            ChecksStore checksStore, 
+            SubscriptionsStore subscriptionsStore,
+            List<NotificationService> notificationServices, 
+            PermissionsStore permissionsStore,
             SeyrenConfig seyrenConfig) {
         this.checksStore = checksStore;
         this.subscriptionsStore = subscriptionsStore;
@@ -89,9 +92,7 @@ public class SubscriptionsBean implements SubscriptionsResource {
     }
 
     @Override
-    public Response testSubscription(
-            @PathParam("checkId") String checkId,
-            @PathParam("subscriptionId") final String subscriptionId) {
+    public Response testSubscription(@PathParam("checkId") String checkId, @PathParam("subscriptionId") final String subscriptionId) {
         Check check = checksStore.getCheck(checkId);
         if (check == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
