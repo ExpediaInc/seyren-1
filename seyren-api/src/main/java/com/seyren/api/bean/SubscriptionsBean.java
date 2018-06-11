@@ -50,8 +50,12 @@ public class SubscriptionsBean implements SubscriptionsResource {
     private final SeyrenConfig seyrenConfig;
 
     @Inject
-    public SubscriptionsBean(ChecksStore checksStore, SubscriptionsStore subscriptionsStore, List<NotificationService> notificationServices,
-                             PermissionsStore permissionsStore, SeyrenConfig seyrenConfig) {
+    public SubscriptionsBean(
+            ChecksStore checksStore, 
+            SubscriptionsStore subscriptionsStore,
+            List<NotificationService> notificationServices, 
+            PermissionsStore permissionsStore,
+            SeyrenConfig seyrenConfig) {
         this.checksStore = checksStore;
         this.subscriptionsStore = subscriptionsStore;
         this.notificationServices = notificationServices;
@@ -63,6 +67,7 @@ public class SubscriptionsBean implements SubscriptionsResource {
     public Response createSubscription(String checkId, Subscription subscription) {
         if (hasNotificationPermissions(subscription.getType())) {
             Subscription stored = subscriptionsStore.createSubscription(checkId, subscription);
+            LOGGER.info("Check={}, Subscription={} :: Message='Subscription created'", checkId, subscription.getId());
             return Response.created(uri(checkId, stored.getId())).build();
         }
         return Response.status(Response.Status.FORBIDDEN).build();
@@ -72,6 +77,7 @@ public class SubscriptionsBean implements SubscriptionsResource {
     public Response updateSubscription(String checkId, Subscription subscription) {
         if (hasNotificationPermissions(subscription.getType())) {
             subscriptionsStore.updateSubscription(checkId, subscription);
+            LOGGER.info("Check={}, Subscription={} :: Message='Subscription updated'", checkId, subscription.getId());
             return Response.noContent().build();
         }
         return Response.status(Response.Status.FORBIDDEN).build();
@@ -80,6 +86,7 @@ public class SubscriptionsBean implements SubscriptionsResource {
     @Override
     public Response deleteSubscription(String checkId, String subscriptionId) {
         subscriptionsStore.deleteSubscription(checkId, subscriptionId);
+        LOGGER.info("Check={}, Subscription={} :: Message='Subscription deleted'", checkId, subscriptionId);
         return Response.noContent().build();
     }
 
@@ -89,40 +96,32 @@ public class SubscriptionsBean implements SubscriptionsResource {
         if (check == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        Collection<Subscription> subscriptions = Collections2.filter(check.getSubscriptions(), new Predicate<Subscription>() {
-            @Override
-            public boolean apply(Subscription subscription) {
-                return subscription.getId().equals(subscriptionId);
-            }
-        });
+        Collection<Subscription> subscriptions = Collections2.filter(check.getSubscriptions(),
+                new Predicate<Subscription>() {
+                    @Override
+                    public boolean apply(Subscription subscription) {
+                        return subscription.getId().equals(subscriptionId);
+                    }
+                });
         if (subscriptions.size() != 1) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         check.setState(AlertType.ERROR);
         Subscription subscription = subscriptions.iterator().next();
         List<Alert> interestingAlerts = new ArrayList<Alert>();
-        Alert alert ;
-        if(check instanceof ThresholdCheck)
-        {
-            ThresholdCheck thresholdCheck = (ThresholdCheck)check;
-            alert = new ThresholdAlert()
-                    .withWarn(thresholdCheck.getWarn())
-                    .withError(thresholdCheck.getError());
+        Alert alert;
+        if (check instanceof ThresholdCheck) {
+            ThresholdCheck thresholdCheck = (ThresholdCheck) check;
+            alert = new ThresholdAlert().withWarn(thresholdCheck.getWarn()).withError(thresholdCheck.getError());
 
-        }
-        else
-        {
+        } else {
             OutlierCheck outlierCheck = (OutlierCheck) check;
-            alert = new OutlierAlert()
-                    .withRelativeDiff(outlierCheck.getRelativeDiff())
+            alert = new OutlierAlert().withRelativeDiff(outlierCheck.getRelativeDiff())
                     .withAbsoluteDiff(outlierCheck.getAbsoluteDiff());
         }
 
-        alert = alert.withTarget(check.getTarget())
-                .withValue(BigDecimal.valueOf(0.0))
-                .withFromType(AlertType.OK)
-                .withToType(AlertType.ERROR)
-                .withTimestamp(new DateTime());
+        alert = alert.withTarget(check.getTarget()).withValue(BigDecimal.valueOf(0.0)).withFromType(AlertType.OK)
+                .withToType(AlertType.ERROR).withTimestamp(new DateTime());
 
         interestingAlerts.add(alert);
         for (NotificationService notificationService : notificationServices) {
@@ -132,7 +131,8 @@ public class SubscriptionsBean implements SubscriptionsResource {
                 } catch (Exception e) {
                     LOGGER.warn("Notifying {} by {} failed.", subscription.getTarget(), subscription.getType(), e);
                     return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                            .entity(String.format("Notifying failed '%s'", e.getMessage())).type(MediaType.TEXT_PLAIN).build();
+                            .entity(String.format("Notifying failed '%s'", e.getMessage())).type(MediaType.TEXT_PLAIN)
+                            .build();
                 }
             }
         }
@@ -156,7 +156,7 @@ public class SubscriptionsBean implements SubscriptionsResource {
         SubscriptionPermissions permissions = permissionsStore.getPermissions(username);
         SubscriptionPermissions globalPermissions = permissionsStore.getPermissions("global");
         for (String s : permissions.getWrite()) {
-            if(type.name().equals(s)) {
+            if (type.name().equals(s)) {
                 return true;
             }
         }
