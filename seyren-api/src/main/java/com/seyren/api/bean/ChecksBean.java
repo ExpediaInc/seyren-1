@@ -73,6 +73,7 @@ public class ChecksBean implements ChecksResource {
             check.setState(AlertType.OK);
         }
         Check stored = checksStore.createCheck(check);
+        LOGGER.info("Check={} :: Message='New check created'", check.getId());
         return Response.created(uri(stored.getId())).build();
     }
 

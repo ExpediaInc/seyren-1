@@ -64,6 +64,8 @@ public class SubscriptionsBean implements SubscriptionsResource {
     public Response createSubscription(String checkId, Subscription subscription) {
         if (hasNotificationPermissions(subscription.getType())) {
             Subscription stored = subscriptionsStore.createSubscription(checkId, subscription);
+            LOGGER.info("Check={}, Subscription={} :: Message='Subscription created'", checkId, subscription.getId());
+
             return Response.created(uri(checkId, stored.getId())).build();
         }
         return Response.status(Response.Status.FORBIDDEN).build();
