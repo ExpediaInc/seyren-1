@@ -74,7 +74,6 @@ public class SubscriptionsBean implements SubscriptionsResource {
         if (hasNotificationPermissions(subscription.getType())) {
             subscriptionsStore.updateSubscription(checkId, subscription);
             LOGGER.info("Check={}, Subscription={} :: Message='Subscription updated'", checkId, subscription.getId());
-
             return Response.noContent().build();
         }
         return Response.status(Response.Status.FORBIDDEN).build();
@@ -84,7 +83,6 @@ public class SubscriptionsBean implements SubscriptionsResource {
     public Response deleteSubscription(String checkId, String subscriptionId) {
         subscriptionsStore.deleteSubscription(checkId, subscriptionId);
         LOGGER.info("Check={}, Subscription={} :: Message='Subscription deleted'", checkId, subscriptionId);
-
         return Response.noContent().build();
     }
 

@@ -84,7 +84,6 @@ public class ChecksBean implements ChecksResource {
         }
         stored = checksStore.saveCheck(check);
         LOGGER.info("Check={} :: Message='Check updated'", checkId);
-
         return Response.ok(stored).build();
     }
 
@@ -101,7 +100,6 @@ public class ChecksBean implements ChecksResource {
     public Response deleteCheck(String checkId) {
         checksStore.deleteCheck(checkId);
         LOGGER.info("Check={} :: Message='Check deleted'", checkId);
-
         return Response.noContent().build();
     }
 
