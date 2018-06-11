@@ -89,7 +89,8 @@ public class SubscriptionsBean implements SubscriptionsResource {
     }
 
     @Override
-    public Response testSubscription(@PathParam("checkId") String checkId,
+    public Response testSubscription(
+            @PathParam("checkId") String checkId,
             @PathParam("subscriptionId") final String subscriptionId) {
         Check check = checksStore.getCheck(checkId);
         if (check == null) {
