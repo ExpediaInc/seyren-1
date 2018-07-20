@@ -26,6 +26,7 @@ import javax.ws.rs.core.Response.Status;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import com.google.gson.Gson;
 import com.seyren.api.jaxrs.ChecksResource;
 import com.seyren.core.domain.AlertType;
 import com.seyren.core.domain.Check;
@@ -102,8 +103,10 @@ public class ChecksBean implements ChecksResource {
 
     @Override
     public Response deleteCheck(String checkId) {
+        Check check = checksStore.getCheck(checkId);
+        String subJson = new Gson().toJson(check.getSubscriptions());
+        LOGGER.info("Check={}, Subscription={} :: Message='Check deleted'", checkId, subJson);
         checksStore.deleteCheck(checkId);
-        LOGGER.info("Check={} :: Message='Check deleted'", checkId);
         return Response.noContent().build();
     }
 
