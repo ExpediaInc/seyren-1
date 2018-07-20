@@ -87,7 +87,7 @@ public class SubscriptionsBean implements SubscriptionsResource {
     @Override
     public Response deleteSubscription(String checkId, String subscriptionId) {
         Check check = checksStore.getCheck(checkId);
-        for(Subscription sub : check.getSubscriptions()){
+        for (Subscription sub : check.getSubscriptions()) {
             if (sub.getId().contains(subscriptionId)) {
                 String subJson = new Gson().toJson(sub);
                 LOGGER.info("Check={}, Subscription={} :: Message='Subscription deleted'", checkId, subJson);
