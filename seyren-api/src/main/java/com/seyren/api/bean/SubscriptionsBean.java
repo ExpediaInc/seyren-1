@@ -15,6 +15,7 @@ package com.seyren.api.bean;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
+import com.google.gson.Gson;
 import com.seyren.api.jaxrs.SubscriptionsResource;
 import com.seyren.core.domain.*;
 import com.seyren.core.service.notification.NotificationService;
@@ -85,8 +86,14 @@ public class SubscriptionsBean implements SubscriptionsResource {
 
     @Override
     public Response deleteSubscription(String checkId, String subscriptionId) {
+        Check check = checksStore.getCheck(checkId);
+        for (Subscription sub : check.getSubscriptions()) {
+            if (sub.getId().contains(subscriptionId)) {
+                String subJson = new Gson().toJson(sub);
+                LOGGER.info("Check={}, Subscription={} :: Message='Subscription deleted'", checkId, subJson);
+            }
+        }
         subscriptionsStore.deleteSubscription(checkId, subscriptionId);
-        LOGGER.info("Check={}, Subscription={} :: Message='Subscription deleted'", checkId, subscriptionId);
         return Response.noContent().build();
     }
 
