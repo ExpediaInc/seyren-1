@@ -72,6 +72,7 @@ public class GraphiteHttpClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(GraphiteHttpClient.class);
     private static final String THRESHOLD_TARGET = "alias(dashed(color(constantLine(%s),\"%s\")),\"%s\")";
     private static final int MAX_CONNECTIONS_PER_ROUTE = 100;
+    private static final int MAX_CONNECTIONS = 300;
 
     private final JsonNodeResponseHandler jsonNodeHandler = new JsonNodeResponseHandler();
     private final ByteArrayResponseHandler chartBytesHandler = new ByteArrayResponseHandler();
@@ -258,6 +259,7 @@ public class GraphiteHttpClient {
         }
 
         manager.setDefaultMaxPerRoute(MAX_CONNECTIONS_PER_ROUTE);
+        manager.setMaxTotal(MAX_CONNECTIONS);
         return manager;
     }
 
