@@ -2,9 +2,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -52,6 +52,12 @@ public class SlackNotificationService implements NotificationService {
 
     private final SeyrenConfig seyrenConfig;
     private final String baseUrl;
+
+    //FIXME Hack to fix SSL issue (javax.net.ssl.SSLException: Received fatal alert: protocol_version) while posting slack notifications.
+    // Better way would be to configure http client itself to use this protocol.
+    static {
+        System.setProperty("https.protocols", "TLSv1.2");
+    }
 
     @Inject
     public SlackNotificationService(SeyrenConfig seyrenConfig) {
