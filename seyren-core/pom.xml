@@ -12,13 +12,18 @@
 
     <dependencies>
         <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+            <version>3.2.2</version>
+        </dependency>
+        <dependency>
             <groupId>com.squareup.pagerduty</groupId>
             <artifactId>pagerduty-incidents</artifactId>
         </dependency>
-         <dependency>
-             <groupId>org.json</groupId>
-             <artifactId>json</artifactId>
-             <version>20171018</version>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20171018</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -127,9 +132,9 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-        	<groupId>com.opsgenie.integration</groupId>
-        	<artifactId>sdk</artifactId>
-    	</dependency>
+            <groupId>com.opsgenie.integration</groupId>
+            <artifactId>sdk</artifactId>
+        </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>seyren-aws-manager</artifactId>
@@ -143,12 +148,4 @@
             <version>1.7.3</version>
         </dependency>
     </dependencies>
-	<repositories>
-	  <repository>
-	      <id>opsgenie-repo</id>
-	      <name>OpsGenie Maven Repository</name>
-	      <url>http://repo.opsgenie.com:9393/content/groups/public</url>
-	      <layout>default</layout>
-	  </repository>
-	</repositories>
 </project>
