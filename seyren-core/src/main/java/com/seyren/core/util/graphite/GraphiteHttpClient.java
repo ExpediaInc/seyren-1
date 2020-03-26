@@ -240,11 +240,15 @@ public class GraphiteHttpClient {
                 TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
                 trustManagerFactory.init(trustStore);
                 TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
-                
+
                 SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
                 sslContext.init(keyManagers, trustManagers, null);
 
-                SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext);
+                SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
+                        sslContext,
+                        new String[]{"TLSv1.2"},
+                        null,
+                        SSLConnectionSocketFactory.getDefaultHostnameVerifier());
 
                 Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory> create()
                         .register("https", sslsf).build();
